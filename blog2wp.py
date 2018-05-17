@@ -4,7 +4,7 @@
 #  blog2wp.py
 #
 #
-# 2018-01-30
+# 2018-05-17
 # verze 1.0
 #
 # Martin Rybensky
@@ -459,13 +459,6 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
                 wpxml.write('       <wp:term_slug><![CDATA[' + rubrika_url[cislo_rubriky] + ']]></wp:term_slug>\n')
                 wpxml.write('       <wp:cat_name><![CDATA[' + rubrika_nazev[cislo_rubriky] + ']]></wp:cat_name>\n')
                 wpxml.write('   </wp:category>\n')
-                #wpxml.write('   <wp:term_id><![CDATA[' + str(cislo_rubriky) + ']]></wp:term_id>\n')
-                #wpxml.write('   <wp:term_taxonomy><![CDATA[category]]></wp:term_taxonomy>\n')
-                #wpxml.write('   <wp:term_slug><![CDATA[' + rubrika_url[cislo_rubriky] + ']]></wp:term_slug>\n')
-                #wpxml.write('   <wp:term_parent><![CDATA[]]></wp:term_parent>\n')
-                #wpxml.write('   <wp:term_name><![CDATA[' + rubrika_nazev[cislo_rubriky] + ']]></wp:term_name>\n')
-                #wpxml.write('   </wp:term>\n')
-
 
                 rubriky_txt.write(url_blog + '/rubrika/' + rubrika_url[cislo_rubriky] + '\n')
                 print str(cislo_rubriky) + ': ' + rubrika_nazev[cislo_rubriky]
@@ -883,7 +876,7 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
 ##############################
 
 
-def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_modei,novy_blog):
+def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,novy_blog):
     titulek_clanku = ''
     rubrika_url = ''
     rubrika = ''
