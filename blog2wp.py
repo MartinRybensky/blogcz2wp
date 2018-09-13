@@ -272,7 +272,8 @@ def ocistit_url(web_url):
 ##############################
 
 def stahni_obrazek(url_ke_stazeni,export_mode):
-    print '--! zavolana funkce stahni_obrazek'
+    # debug
+    #print '--! zavolana funkce stahni_obrazek'
     vstupni_url = url_ke_stazeni
 
     url_obrazku = ''
@@ -290,7 +291,7 @@ def stahni_obrazek(url_ke_stazeni,export_mode):
 
     # pokud je toto detekovano, je chranena url odrbana o ochranne prvky
     if 'bcache' in vstupni_url or 'imageproxy' in vstupni_url:
-        print 'obrazek je hostovan na blogu.cz'
+        #print 'obrazek je hostovan na blogu.cz'
         url_obrazku = vstupni_url.split('cz~',1)[1]
         server = vstupni_url.split('~',1)[1]
         server = server.split('~',1)[0]
@@ -298,14 +299,14 @@ def stahni_obrazek(url_ke_stazeni,export_mode):
         spravna_url = 'http://' + server + url_obrazku
         print 'spravna url po zruseni ochrany: ' + spravna_url
     else:
-        print 'obrazek je hostovan externe' # pokud vyrazy testovane vyse detekovany nejsou,
+        #print 'obrazek je hostovan externe' # pokud vyrazy testovane vyse detekovany nejsou,
         spravna_url = vstupni_url           # je zjistena url rovnou povazovana za pouzitelnou
 
     # samotne stahovani neprovadime u varianty exportu, kdy ponechavame puvodni url obrazku
     if export_mode != 3:
         jmeno_souboru = url_ke_stazeni.rsplit('/',1)[1]
         jmeno_souboru = 'obrazky/' + jmeno_souboru
-        print 'lokalni cesta: ' + jmeno_souboru
+        #print 'lokalni cesta: ' + jmeno_souboru
 
         # zjistena url je vlozena do soupisu obrazku 
         soupis = open('temp/soupis_obrazku.txt', "a")
@@ -383,6 +384,11 @@ def stahni_html(url_ke_stazeni,clanek):
 ##############################
 
 def exportovat_rubriky(url_blog,vystupni_soubor,debug):
+
+    status_fail = ' [\033[91mFAIL\033[0m] '
+    status_ok = ' [\033[92m OK \033[0m] '
+    status_warn= ' [\033[93mWARN\033[0m] '
+
     url_rubriky = url_blog + '/rubriky'
 
     cislo_rubriky = 0
@@ -397,10 +403,10 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
     nazev_blogu = ''
 
     if os.path.isfile('temp/rubriky'):
-        print 'soubor temp/soupis_clanku.txt jiz existuje, pokracuji s daty z neho'
+        print status_warn + 'soubor temp/soupis_clanku.txt již existuje, pokračuji s daty z něho'
     else:
         stahni_html(url_rubriky,False)
-        print 'soubor s definicemi rubrik uspesne stazen'
+        print status_ok + 'soubor s definicemi rubrik úspešně stažen'
 
     # a ted to zapiseme do xmlka
     wpxml = open(vystupni_soubor, "w+")
@@ -516,6 +522,8 @@ def exportovat_archiv(url_blog,debug):
                 radek_nazev = cislo_radku + 2
                 radek_pocet = cislo_radku + 3
             if cislo_radku == radek_odkaz:
+		if debug:
+			print 'exportovat_archiv, zpracovavany radek: '+str(cislo_radku)
                 archiv_url[zaznam] = line.split('<a href="/',1)[1]
                 archiv_url[zaznam] = archiv_url[zaznam].split('">',1)[0]
             if cislo_radku == radek_nazev:
@@ -529,7 +537,9 @@ def exportovat_archiv(url_blog,debug):
 
                 print archiv_nazev[zaznam] + ', záznamů: ' + str(archiv_pocet[zaznam])
                 archiv_txt.write(url_blog + '/' + archiv_url[zaznam] + '\n')
-
+		
+	    if '<div id="menuInner">' in line:
+	    	break
 
     # soubor rubriky je jiz vytezen, smazat
     # os.remove('temp/archiv')
@@ -547,6 +557,11 @@ def exportovat_archiv(url_blog,debug):
 ##############################
 
 def soupis_clanku(url_blog,debug):
+
+    status_fail = ' [\033[91mFAIL\033[0m] '
+    status_ok = ' [\033[92m OK \033[0m] '
+    status_warn= ' [\033[93mWARN\033[0m] '
+
     cislo_radku = 0
     radek_odkaz = 0
     radek_zacatek = 0
@@ -558,7 +573,7 @@ def soupis_clanku(url_blog,debug):
 
     # zapis ziskanych url clanku
     if os.path.isfile('temp/soupis_clanku.txt'):
-        print 'soubor temp/soupis_clanku.txt jiz existuje, pokracuji s daty z neho'
+        print status_warn + 'soubor temp/soupis_clanku.txt jiz existuje, pokracuji s daty z neho'
     else:
         seznam_txt = open('temp/soupis_clanku.txt', 'w+')
 
@@ -890,6 +905,7 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
     od_zacatku = 0
     clanek_zacatek = 0
     radek_clanek = 0
+    radek_datum = 0
     zapsano_radku = 0
 
 
@@ -936,12 +952,19 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
             elif '|&nbsp;' in line and ':' in line and od_zacatku < 3 and od_zacatku > 0:
                 autor = line.split('|&nbsp;',1)[1]
                 autor = autor.rstrip()
+	    # datum publikovani
                 datum_extrakt = line.split('|&nbsp;',1)[0]
                 datum_extrakt = datum_extrakt.rstrip()
                 datum_extrakt = datum_extrakt.strip()
             elif '|&nbsp;' in line and 'Před' in line and od_zacatku < 3 and od_zacatku > 0:
                 autor = line.split('|&nbsp;',1)[1]
                 autor = autor.rstrip()
+	    elif '</h2>' in line and od_zacatku < 2 and od_zacatku > 0 and datum_extrakt == "":
+		radek_datum = cislo_radku + 1
+	    elif cislo_radku is radek_datum and datum_extrakt == "":
+		datum_extrakt = line.rstrip()
+		datum_extrakt = datum_extrakt.strip()
+		print datum_extrakt
             # ulozime si cislo radku, za kterym zacina samotny clanek + 1, kde zacina doopravdy
             elif '<div class="articleText">' in line:
                 radek_clanek = cislo_radku + 1
@@ -984,7 +1007,7 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                                         nova_url = 'wp-content/uploads/' + jmeno_souboru
                                     if export_mode == 1:
                                         stahni_obrazek(obrazek,export_mode)
-                                        nova_url = novy_blog + '/wp-content/uploads/' + jmeno_souboru
+                                        nova_url = novy_blog + '/' + jmeno_souboru
 
                                     if debug:
                                         print 'stara url: ' + obrazek
@@ -1083,6 +1106,13 @@ except:
     debug = False
 
 
+
+# statusy v konzoli
+status_fail = ' [\033[91mFAIL\033[0m] '
+status_ok = ' [\033[92m OK \033[0m] '
+status_warn= ' [\033[93mWARN\033[0m] '
+bila = '\033[0m'
+
 # inicializace promennych
 domena = 'blogcz.veruce.cz'
 cislo_radku = 0
@@ -1098,7 +1128,7 @@ export_mode_vstup = ''
 novy_blog = ''
 
 print '\n'
-print '1 - vlastni wordpress: stahnout obrazky, cesty zmenit na absolutni na nove umisteni'
+print '1 - vlastni wordpress nebo hosting obrazku: stahnout obrazky, cesty zmenit na absolutni'
 print '2 - vlastni wordpress: stahnout obrazky, cesty zmenit na relativni do wp-content/uploads'
 print '3 - blogspot.com: obrazky nestahovat, ponechat absolutni cesty na jejich puvodni umisteni'
 print '4 - wordpress.com: stahnout obrazky, cesty zmenit na nove umistani na wp.com\n'
@@ -1121,7 +1151,7 @@ while True:
 print "Vybrali jste: ", export_mode
 
 if export_mode == 1:
-    print 'Zadejte adresu, na ktere bude provozovan novy blog.\nZadavejte ve tvaru s http/https, napr. http://mojedomena.cz\n'
+    print 'Zadejte kompletni adresu adresare, ve kterem se budou nachazet obrazky.\nZadavejte ve tvaru s http/https, napr. http://mojedomena.cz/obrazky/fotky nebo http://mujblog.cz/wp-content/upload\n'
     while True:
         novy_blog = raw_input("Adresa: ")
         if novy_blog != '':
@@ -1184,10 +1214,11 @@ pocet_dle_souboru = num_lines = sum(1 for line in open('temp/soupis_clanku.txt')
 
 # pokud program nebezi v debug modu, pri nesouhlasu poctu nalezenych clanku oproti archivu se ukonci
 if pocet_dle_souboru != pocet_dle_blogu and not debug:
-    print 'Pocet clanku nesouhlasi!'
-    print 'Podle archivu by jich melo byt: ' + str(pocet_dle_blogu)
-    print 'Nalezeno a pripraveno ke stazeni: ' + str(pocet_dle_souboru)
+    print status_fail + 'Počet článků nesouhlasí! V archivu deklarováno / nalezeno: ' + str(pocet_dle_blogu) + ' / ' + str(pocet_dle_souboru) + '\n'
     sys.exit(0)
+else:
+    print status_ok + 'Počet nalezených článků se shoduje s deklarovanými počty v archivu'
+    print status_ok + 'Celkový počet článků ke stažení: ' + str(pocet_dle_souboru)
 
 # debug
 
@@ -1222,5 +1253,5 @@ wpxml.close()
 
 
 
-print 'Hotovo! Vysledek ulozen do ' + vystupni_soubor ; '\n'
+print status_ok + 'Hotovo! Vysledek ulozen do ' + vystupni_soubor ; '\n'
 sys.exit(0)
