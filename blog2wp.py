@@ -4,8 +4,7 @@
 #  blog2wp.py
 #
 #
-# 2018-05-17
-# verze 1.0
+# 2018-09-18
 #
 # Martin Rybensky
 #
@@ -16,18 +15,12 @@ tento_rok = str(datetime.datetime.now().year)
 tento_mesic = str(datetime.datetime.now().month)
 
 ##########################################################################################
-#
 # DEFINICE FUNKCI
-#
-
-
 
 
 ##############################
-#
 # prevoddata - funkce prevadejici posrane tvary datumu z blog.cz 
 # na standardni yyyy-mm-dd hh:mm:ss
-#
 ##############################
 
 def prevoddata(fujdatum,debug):
@@ -471,7 +464,7 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
 
 
     # soubor rubriky je jiz vytezen, smazat
-    os.remove('temp/rubriky')
+    # os.remove('temp/rubriky')
 
 
     rubriky_txt.close()
@@ -484,6 +477,10 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
 
 def exportovat_archiv(url_blog,debug):
     url_archiv = url_blog + '/archiv'
+
+    status_fail = ' [\033[91mFAIL\033[0m] '
+    status_ok = ' [\033[92m OK \033[0m] '
+    status_warn= ' [\033[93mWARN\033[0m] '
 
 
     cislo_radku = 0
@@ -500,10 +497,10 @@ def exportovat_archiv(url_blog,debug):
 
 
     if os.path.isfile('temp/archiv'):
-        print 'soubor temp/archiv jiz existuje, pokracuji s daty z neho'
+        print status_warn + 'soubor temp/archiv již existuje, pokračuji s daty z něho'
     else:
         stahni_html(url_archiv,False)
-        print 'soubor s definicemi rubrik uspesne stazen'
+        print status_ok + 'soubor s definicemi rubrik úspesně stažen'
 
     # a ted to zapiseme do txt
     archiv_txt = open('temp/archiv.txt', "w+")
@@ -908,6 +905,9 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
     radek_datum = 0
     zapsano_radku = 0
 
+    status_fail = ' [\033[91mFAIL\033[0m] '
+    status_ok = ' [\033[92m OK \033[0m] '
+    status_warn= ' [\033[93mWARN\033[0m] '
 
     #now = datetime.datetime.now()
     #aktualni_rok = now.year
@@ -1038,6 +1038,17 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                                 aha = 'haha'
 
     wpdatum = prevoddata(datum_extrakt,debug)
+
+    if autor == "":
+	print status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat jméno autora'
+	sys.exit(0)
+    elif wpdatum == "":
+	print status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat datum publikování'
+	sys.exit(0)
+    elif text_clanku == "":
+	print status_fail + 'Nepodařilo se extrahovat text článku "' + titulek_clanku + '"'
+	sys.exit(0)
+
     wpxml = open(vystupni_soubor, "a")
 
     wpxml.write('   <item>\n')
@@ -1084,11 +1095,20 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
 # SAMOTNY PROGRAM
 #
 
-url_blog = sys.argv[1]
+# statusy v konzoli
+status_fail = ' [\033[91mFAIL\033[0m] '
+status_ok = ' [\033[92m OK \033[0m] '
+status_warn= ' [\033[93mWARN\033[0m] '
+
+try:
+    url_blog = sys.argv[1]
+except:
+    print status_fail + 'Jako parametr je třeba zadat adresu převáděného blogu'
+    sys.exit(1)
 
 if 'blog.cz' not in url_blog:
-    print 'chyba, byla zadana spatna adresa'
-    sys.exit(0)
+    print status_fail + 'Adresa převáděného blogu musí být ve tvaru nazevblogu.blog.cz'
+    sys.exit(1)
 
 # pokud byla url blogu zadana bez "http://", doplnime
 if 'http://' not in url_blog:
@@ -1106,12 +1126,6 @@ except:
     debug = False
 
 
-
-# statusy v konzoli
-status_fail = ' [\033[91mFAIL\033[0m] '
-status_ok = ' [\033[92m OK \033[0m] '
-status_warn= ' [\033[93mWARN\033[0m] '
-bila = '\033[0m'
 
 # inicializace promennych
 domena = 'blogcz.veruce.cz'
@@ -1171,12 +1185,6 @@ print 'Adresa noveho blogu je nasledujici: ' + novy_blog
 
 
 
-
-
-
-
-
-
 vystupni_soubor = url_blog.split('http://',1)[1]
 vystupni_soubor = vystupni_soubor + '.xml'
 
@@ -1193,19 +1201,19 @@ if export_mode != 3:
     soupis_obrazku.close()
 
 
-print 'URL exportovaneho blogu: ' + url_blog
-print 'Pracovni adresar: ' + 'temp'
-print 'Jmeno XML souboru s exportem: ' + vystupni_soubor + '\n'
+print '        URL exportovaného blogu: ' + url_blog
+print '        Pracovní adresář: ' + 'temp'
+print '        Jméno XML souboru s exportem: ' + vystupni_soubor + '\n'
 
 
 
-print 'Nalezene rubriky k exportu:'
+print '        Nalezené rubriky k exportu:'
 exportovat_rubriky(url_blog,vystupni_soubor,debug)
 
-print 'Nalezene clanky v archivu:'
+print '        Nalezene články v archivu:'
 pocet_dle_blogu = exportovat_archiv(url_blog,debug)
 
-print 'Nalezene clanky:'
+print '        Nalezené články:'
 soupis_clanku(url_blog,debug)
 
 
