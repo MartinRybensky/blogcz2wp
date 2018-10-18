@@ -33,7 +33,7 @@ def prevoddata(fujdatum,debug):
     # 12. června 2017 v 10:21
 
     if debug:
-        sys.stdout.write('prevoddata na vstupu: ' + fujdatum)
+        sys.stdout.write('prevoddata na vstupu: ' + fujdatum + '\n')
 
     # inicializace promennych
     rok = ''
@@ -239,7 +239,7 @@ def prevoddata(fujdatum,debug):
         wpdatum =  str(rok) + '-' + str(mesic) + '-' + str(den) + ' ' + hodina + ':' + minuta + ':' + vterina
 
     if debug:
-        sys.stdout.write('prevoddata na vystupu: ' + wpdatum)
+        sys.stdout.write('prevoddata na vystupu: ' + wpdatum + '\n')
 
     return wpdatum
 
@@ -294,9 +294,7 @@ def ocistit_url(web_url):
 #
 ##############################
 
-def stahni_obrazek(url_ke_stazeni,export_mode):
-    # debug
-    #sys.stdout.write('--! zavolana funkce stahni_obrazek'
+def stahni_obrazek(url_ke_stazeni,export_mode,debug):
     vstupni_url = url_ke_stazeni
 
     url_obrazku = ''
@@ -314,13 +312,15 @@ def stahni_obrazek(url_ke_stazeni,export_mode):
 
     # pokud je toto detekovano, je chranena url odrbana o ochranne prvky
     if 'bcache' in vstupni_url or 'imageproxy' in vstupni_url:
-        #sys.stdout.write('obrazek je hostovan na blogu.cz'
+	if debug:
+            sys.stdout.write('obrazek je hostovan na blogu.cz')
         url_obrazku = vstupni_url.split('cz~',1)[1]
         server = vstupni_url.split('~',1)[1]
         server = server.split('~',1)[0]
         server = server.replace('/','.')
         spravna_url = 'http://' + server + url_obrazku
-        sys.stdout.write('spravna url po zruseni ochrany: ' + spravna_url)
+	if debug:
+            sys.stdout.write('spravna url po zruseni ochrany: ' + spravna_url + '\n')
     else:
         #sys.stdout.write('obrazek je hostovan externe' # pokud vyrazy testovane vyse detekovany nejsou,
         spravna_url = vstupni_url           # je zjistena url rovnou povazovana za pouzitelnou
@@ -329,7 +329,8 @@ def stahni_obrazek(url_ke_stazeni,export_mode):
     if export_mode != 3:
         jmeno_souboru = url_ke_stazeni.rsplit('/',1)[1]
         jmeno_souboru = 'obrazky/' + jmeno_souboru
-        #sys.stdout.write('lokalni cesta: ' + jmeno_souboru
+	if debug:
+            sys.stdout.write('lokalni cesta: ' + jmeno_souboru + '\n')
 
         # zjistena url je vlozena do soupisu obrazku 
         soupis = open('temp/soupis_obrazku.txt', "a")
@@ -531,7 +532,7 @@ def exportovat_archiv(url_blog,debug):
         sys.stdout.write(status_warn + 'soubor temp/archiv již existuje, pokračuji s daty z něho\n')
     else:
         stahni_html(url_archiv,False)
-        sys.stdout.write(status_ok + 'soubor s definicemi rubrik úspesně stažen\n')
+        sys.stdout.write(status_ok + 'soubor s archivem úspesně stažen\n')
 
     # a ted to zapiseme do txt
     archiv_txt = open('temp/archiv.txt', "w+")
@@ -755,14 +756,14 @@ def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
             if 'discussPrevious' in lajnc:
                 strankovane_komentare = True
                 if debug:
-                    sys.stdout.write('discussPrevious nalezen (strankovany vypis komentaru detekovan)')
+                    sys.stdout.write('discussPrevious nalezen (strankovany vypis komentaru detekovan)\n')
 
     with open(vstupni_soubor, 'rU') as d:
        for lajnd in d:
             if 'commentNr" id="ref1"' in lajnd:
                 od_jednicky = True
                 if debug:
-                    sys.stdout.write('commentNr" id="ref1" nalezen (vypis komentaru od 1. detekovan)')
+                    sys.stdout.write('commentNr" id="ref1" nalezen (vypis komentaru od 1. detekovan)\n')
 
     with open(vstupni_soubor, 'rU') as e:
        for lajn in e:
@@ -779,7 +780,7 @@ def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
                 soubor_komentare = url_komentaru.rsplit('/',1)[1]
                 url_noindex = url_komentaru.rsplit('/',1)[0]
 
-                sys.stdout.write('stranek komentaru: ' + soubor_komentare + ' + zbytek')
+                sys.stdout.write('stranek komentaru: ' + soubor_komentare + ' + zbytek\n')
                 soubor_komentare = int(soubor_komentare)
                 soubor_komentare_range = soubor_komentare + 1
                 for w in range(1, soubor_komentare_range):
@@ -792,7 +793,7 @@ def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
                         index_pole = w - 1
                         index_pole = str(index_pole) + '00'
                         index_pole = int(index_pole)
-                    sys.stdout.write('zpracovavam soubor:' + komentarovy_soubor + ', pocatecni index: ' + str(index_pole))
+                    sys.stdout.write('zpracovavam soubor:' + komentarovy_soubor + ', pocatecni index: ' + str(index_pole) + '\n')
                     zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug)
 
                     # aby se uz neprovadely radky nize
@@ -801,7 +802,7 @@ def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
                 index_pole = str(index_pole)
                 index_pole = str(soubor_komentare) + '00'
                 index_pole = int(index_pole)
-                sys.stdout.write('zpracovavam zbytek z clanku, pocatecni index: ' + str(index_pole))
+                sys.stdout.write('zpracovavam zbytek z clanku, pocatecni index: ' + str(index_pole) + '\n')
                 zapis_komentare(vstupni_soubor,vystupni_soubor,index_pole,debug)
 
 
@@ -812,7 +813,7 @@ def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
         # nestrankovane komentare / zbytek komentaru prebyvajicich ze strankovanych
         komentarovy_soubor = vstupni_soubor
         if debug:
-            sys.stdout.write('komentare zpracovavany ze souboru: ' + komentarovy_soubor)
+            sys.stdout.write('komentare zpracovavany ze souboru: ' + komentarovy_soubor + '\n')
         zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug)
 
 def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
@@ -883,8 +884,8 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
                 kom_text[pocet_komentaru] = kom_text[pocet_komentaru].strip()
                 kom_text[pocet_komentaru] = kom_text[pocet_komentaru].rstrip()
 
-    if debug:
-        sys.stdout.write(kom_jmeno)
+    #if debug:
+    #    sys.stdout.write(kom_jmeno)
     for y, elem in enumerate(kom_jmeno):
 
         z = y + index_pole
@@ -1039,17 +1040,15 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                                 jmeno_souboru = obrazek.rsplit('/',1)[1]
                                 soubor_obrazek = 'obrazky/' + jmeno_souboru
                                 if obrazek == obrazek:
-                                    if debug:
-                                        sys.stdout.write('podminka prosla..')
                                     jmeno_souboru = obrazek.rsplit('/',1)[1]
 
                                     if export_mode == 4:
-                                        stahni_obrazek(obrazek,export_mode)
+                                        stahni_obrazek(obrazek,export_mode,debug)
                                         nova_url = novy_blog + '/' + tento_rok + '/' + tento_mesic.zfill(2) + '/' + jmeno_souboru
                                     if export_mode == 3:
                                         nova_url = stahni_obrazek(obrazek,export_mode)
                                     if export_mode == 2:
-                                        stahni_obrazek(obrazek,export_mode)
+                                        stahni_obrazek(obrazek,export_mode,debug)
                                         nova_url = 'wp-content/uploads/' + jmeno_souboru
                                     if export_mode == 1:
                                         stahni_obrazek(obrazek,export_mode)
@@ -1062,7 +1061,7 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                                     text_clanku = text_clanku.replace(obrazek, nova_url)
                                     if debug:
                                         sys.stdout.write('pred zavolanim stahni')
-                                        stahni_obrazek(obrazek,export_mode)
+                                        stahni_obrazek(obrazek,export_mode,debug)
                                     if debug:
                                         sys.stdout.write('stahni_obrazek(' + obrazek + ')    --  doopravdy nestahuje, neprovokujeme')
                                     if debug:
@@ -1290,17 +1289,17 @@ with open('temp/soupis_clanku.txt', 'rU') as m:
         clanek_soubor = clanek_soubor.rstrip('\r\n')
         clanek_soubor_test = 'temp/' + clanek_soubor
 	
-
-	progressbar(cislo_radku,pocet_dle_souboru)
+	if  not debug:
+	   progressbar(cislo_radku,pocet_dle_souboru)
 	
         if os.path.isfile(clanek_soubor_test):
 	    continue
-            #sys.stdout.write("\r" + str(cislo_radku) + '. soubor jiz existuje, zapisuji do xml: ' + clanek_soubor)
-            #sys.stdout.flush()
+	    if debug:
+               sys.stdout.write("\n\n" + str(cislo_radku) + '. soubor jiz existuje, zapisuji do xml: ' + clanek_soubor + '\n')
         else:
             stahni_html(zaznam,True)
-            #sys.stdout.write("\r" + str(cislo_radku) + '.soubor stazen, zapisuji do xml: ' + clanek_soubor)
-	    #sys.stdout.flush()
+	    if debug:
+               sys.stdout.write("\n\n" + str(cislo_radku) + '.soubor stazen, zapisuji do xml: ' + clanek_soubor + '\n')
 
 
 
