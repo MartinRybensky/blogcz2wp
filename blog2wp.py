@@ -33,7 +33,7 @@ def prevoddata(fujdatum,debug):
     # 12. června 2017 v 10:21
 
     if debug:
-        sys.stdout.write('prevoddata na vstupu: ' + fujdatum + '\n')
+        sys.stdout.write('datum puvodni: ' + fujdatum + ' | ')
 
     # inicializace promennych
     rok = ''
@@ -239,7 +239,7 @@ def prevoddata(fujdatum,debug):
         wpdatum =  str(rok) + '-' + str(mesic) + '-' + str(den) + ' ' + hodina + ':' + minuta + ':' + vterina
 
     if debug:
-        sys.stdout.write('prevoddata na vystupu: ' + wpdatum + '\n')
+        sys.stdout.write('datum prevedene: ' + wpdatum + '\n')
 
     return wpdatum
 
@@ -267,6 +267,7 @@ def progressbar(done,total):
                 donepct = int(donepct)
 
         zbyva = 100 - donepct
+
         hotovo = donepct
 
         bar = opakuj_znak(u'\u2588',hotovo) + opakuj_znak(u'\u2591',zbyva)
@@ -909,7 +910,7 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
 
         if z > index_pole:
             if debug:
-                sys.stdout.write('index: ' + str(z) + '. ' + kom_jmeno[z] + ', zapisuji')
+                sys.stdout.write('komentar: ' + str(z) + '. ' + kom_jmeno[z] + ' | ')
             wpxml = open(vystupni_soubor, 'a')
             wpxml.write('       <wp:comment>\n')
             wpxml.write('           <wp:comment_id>' + str(z) + '</wp:comment_id>\n')
@@ -1075,23 +1076,19 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                                 else:
                                     if debug:
                                         sys.stdout.write('obrazek jiz stazen a zpracovan')
-                                        #konec = True
-
                             except:
-                                #sys.stdout.write('konec, protoze nelze iniciovat pole po splitu')
-                                #konec = True
                                 continue
 
     wpdatum = prevoddata(datum_extrakt,debug)
 
     if autor == "":
-	sys.stdout.write(status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat jméno autora')
+	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat jméno autora\n')
 	sys.exit(0)
     elif wpdatum == "":
-	sys.stdout.write(status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat datum publikování')
+	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat datum publikování\n')
 	sys.exit(0)
     elif text_clanku == "":
-	sys.stdout.write(status_fail + 'Nepodařilo se extrahovat text článku "' + titulek_clanku + '"')
+	sys.stdout.write('\n' + status_fail + 'Nepodařilo se extrahovat text článku "' + titulek_clanku + '"\n')
 	sys.exit(0)
 
     wpxml = open(vystupni_soubor, "a")
@@ -1187,10 +1184,10 @@ export_mode_vstup = ''
 novy_blog = ''
 
 sys.stdout.write('\n')
-sys.stdout.write('1 - vlastni wordpress nebo hosting obrazku: stahnout obrazky, cesty zmenit na absolutni\n')
-sys.stdout.write('2 - vlastni wordpress: stahnout obrazky, cesty zmenit na relativni do wp-content/uploads\n')
-sys.stdout.write('3 - blogspot.com: obrazky nestahovat, ponechat absolutni cesty na jejich puvodni umisteni\n')
-sys.stdout.write('4 - wordpress.com: stahnout obrazky, cesty zmenit na nove umistani na wp.com\n')
+sys.stdout.write('1 - vlastní wordpress nebo hosting obrázků: stáhnout obrázky, cesty změnit na absolutní\n')
+sys.stdout.write('2 - vlastní wordpress: stáhnout obrázky, cesty změnit na relativní do wp-content/uploads\n')
+sys.stdout.write('3 - blogspot.com: obrázky nestahovat, ponechat absolutní cesty na jejich puvodní umístění\n')
+sys.stdout.write('4 - wordpress.com: stáhnout obrázky, cesty změnit na nové umistaní na wp.com\n')
 
 while True:
     export_mode_vstup = raw_input("Zvolte rezim exportu (1-4): ")
@@ -1210,13 +1207,13 @@ while True:
 sys.stdout.write('\nVybrali jste: ' + str(export_mode) + '\n\n')
 
 if export_mode == 1:
-    sys.stdout.write('Zadejte kompletni adresu adresare, ve kterem se budou nachazet obrazky.\nZadavejte ve tvaru s http/https, napr. http://mojedomena.cz/obrazky/fotky nebo http://mujblog.cz/wp-content/upload\n')
+    sys.stdout.write('Zadejte kompletni adresu adresáře, ve kterém se budou nacházet obrázky.\nZadávejte ve tvaru s http/https, např. http://mojedomena.cz/obrazky/fotky nebo http://mujblog.cz/wp-content/upload\n')
     while True:
         novy_blog = raw_input("Adresa: ")
         if novy_blog != '':
             break
 if export_mode == 4:
-    sys.stdout.write('Zadejte adresu noveho blogu na wordpress.com.\nZadavejte ve tvaru bez http/https, napr. mujblog.wordpress.com\n')
+    sys.stdout.write('Zadejte adresu nového blogu na wordpress.com.\nZadávejte ve tvaru bez http/https, např. mujblog.wordpress.com\n')
     while True:
         novy_blog = raw_input("Adresa: ")
         if novy_blog != '':
@@ -1268,7 +1265,7 @@ pocet_dle_souboru = num_lines = sum(1 for line in open('temp/soupis_clanku.txt')
 # pokud program nebezi v debug modu, pri nesouhlasu poctu nalezenych clanku oproti archivu se ukonci
 if pocet_dle_souboru != pocet_dle_blogu and not debug:
     sys.stdout.write(status_fail + 'Počet článků nesouhlasí! V archivu deklarováno / nalezeno: ' + str(pocet_dle_blogu) + ' / ' + str(pocet_dle_souboru) + '\n')
-    sys.exit(0)
+    sys.exit(1)
 else:
     sys.stdout.write('\n' + status_ok + 'Počet nalezených článků se shoduje s deklarovanými počty v archivu\n')
     sys.stdout.write(status_ok + 'Celkový počet článků ke stažení: ' + str(pocet_dle_souboru) + '\n')
@@ -1295,11 +1292,11 @@ with open('temp/soupis_clanku.txt', 'rU') as m:
         if os.path.isfile(clanek_soubor_test):
 	    continue
 	    if debug:
-               sys.stdout.write("\n\n" + str(cislo_radku) + '. soubor jiz existuje, zapisuji do xml: ' + clanek_soubor + '\n')
+               sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) + '] soubor již existuje, zapisuji do xml: ' + clanek_soubor + '\n')
         else:
             stahni_html(zaznam,True)
 	    if debug:
-               sys.stdout.write("\n\n" + str(cislo_radku) + '.soubor stazen, zapisuji do xml: ' + clanek_soubor + '\n')
+               sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) +  '] soubor stažen, zapisuji do xml: ' + clanek_soubor + '\n')
 
 
 
