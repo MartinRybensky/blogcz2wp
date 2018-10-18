@@ -244,14 +244,9 @@ def prevoddata(fujdatum,debug):
     return wpdatum
 
 
-
 ##############################
-#
 # progressbar
-#
 ##############################
-
-
 
 def opakuj_znak(znak,pocet):
         return (znak * ((pocet/len(znak))+1))[:pocet]
@@ -276,9 +271,7 @@ def progressbar(done,total):
 	sys.stdout.flush()
 
 ##############################
-#
 # ocistit_url - zbavi url v komentari nezadouciho nofollow
-#
 ##############################
 
 def ocistit_url(web_url):
@@ -290,9 +283,7 @@ def ocistit_url(web_url):
     return ocistena_url
 
 ##############################
-#
 # stahni_obrazek
-#
 ##############################
 
 def stahni_obrazek(url_ke_stazeni,export_mode,debug):
@@ -364,14 +355,10 @@ def stahni_obrazek(url_ke_stazeni,export_mode,debug):
 
 
 ##############################
-#
 # stahni_html - stahne ze zadane url html soubor
-#
 ##############################
 
 def stahni_html(url_ke_stazeni,clanek):
-
-
 
     jmeno_souboru = ''
     jmeno_souboru_p1 = ''
@@ -403,9 +390,7 @@ def stahni_html(url_ke_stazeni,clanek):
 
 
 ##############################
-#
 # exportovat_rubriky  
-#
 ##############################
 
 def exportovat_rubriky(url_blog,vystupni_soubor,debug):
@@ -502,10 +487,9 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
 
     rubriky_txt.close()
     wpxml.close()
+
 ##############################
-#
 # exportovat_archiv
-#
 ##############################
 
 def exportovat_archiv(url_blog,debug):
@@ -581,9 +565,7 @@ def exportovat_archiv(url_blog,debug):
     return pocet_celkem
 
 ##############################
-#
 # soupis_clanku
-#
 ##############################
 
 def soupis_clanku(url_blog,debug):
@@ -738,9 +720,7 @@ def soupis_clanku(url_blog,debug):
 
 
 ##############################
-#
 # zpracovat_komentare
-#
 ##############################
 
 def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
@@ -930,11 +910,8 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
 
 
 ##############################
-#
-# exportovat_clanek - 
-#
+# exportovat_clanek 
 ##############################
-
 
 def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,novy_blog):
     titulek_clanku = ''
@@ -956,9 +933,6 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
     status_fail = ' [\033[91mFAIL\033[0m] '
     status_ok = ' [\033[92m OK \033[0m] '
     status_warn= ' [\033[93mWARN\033[0m] '
-
-    #now = datetime.datetime.now()
-    #aktualni_rok = now.year
 
     vstupni_soubor = vstupni_soubor.strip()
     vstupni_soubor = vstupni_soubor.rstrip()
@@ -1271,7 +1245,6 @@ else:
     sys.stdout.write(status_ok + 'Celkový počet článků ke stažení: ' + str(pocet_dle_souboru) + '\n')
     sys.stdout.write(' [info] stahuji články, zpracovávám jejich obsah a zapisuji jej do XML:\n')
 
-# debug
 
 # zapsat do XMLka clanky
 with open('temp/soupis_clanku.txt', 'rU') as m:
