@@ -1057,13 +1057,13 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
 
     if autor == "":
 	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat jméno autora\n')
-	sys.exit(0)
+	sys.exit(1)
     elif wpdatum == "":
 	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat datum publikování\n')
-	sys.exit(0)
+	sys.exit(1)
     elif text_clanku == "":
 	sys.stdout.write('\n' + status_fail + 'Nepodařilo se extrahovat text článku "' + titulek_clanku + '"\n')
-	sys.exit(0)
+	sys.exit(1)
 
     wpxml = open(vystupni_soubor, "a")
 
