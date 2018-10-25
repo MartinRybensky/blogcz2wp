@@ -287,6 +287,7 @@ def ocistit_url(web_url):
 ##############################
 
 def stahni_obrazek(url_ke_stazeni,export_mode,debug):
+
     vstupni_url = url_ke_stazeni
 
     url_obrazku = ''
@@ -305,16 +306,23 @@ def stahni_obrazek(url_ke_stazeni,export_mode,debug):
     # pokud je toto detekovano, je chranena url odrbana o ochranne prvky
     if 'bcache' in vstupni_url or 'imageproxy' in vstupni_url:
 	if debug:
-            sys.stdout.write('obrazek je hostovan na blogu.cz')
-        url_obrazku = vstupni_url.split('cz~',1)[1]
-        server = vstupni_url.split('~',1)[1]
-        server = server.split('~',1)[0]
+            sys.stdout.write('obrazek je hostovan na blogu.cz\n')
+	if '%7E' in vstupni_url:
+           url_obrazku = vstupni_url.split('cz%7E',1)[1]
+           server = vstupni_url.split('%7E',1)[1]
+           server = server.split('%7E',1)[0]
+	if '~' in vstupni_url:
+           url_obrazku = vstupni_url.split('cz~',1)[1]
+           server = vstupni_url.split('~',1)[1]
+           server = server.split('~',1)[0]
+
         server = server.replace('/','.')
+
         spravna_url = 'http://' + server + url_obrazku
 	if debug:
             sys.stdout.write('spravna url po zruseni ochrany: ' + spravna_url + '\n')
     else:
-        #sys.stdout.write('obrazek je hostovan externe' # pokud vyrazy testovane vyse detekovany nejsou,
+        # pokud vyrazy testovane vyse detekovany nejsou,
         spravna_url = vstupni_url           # je zjistena url rovnou povazovana za pouzitelnou
 
     # samotne stahovani neprovadime u varianty exportu, kdy ponechavame puvodni url obrazku
@@ -324,13 +332,14 @@ def stahni_obrazek(url_ke_stazeni,export_mode,debug):
 	if debug:
             sys.stdout.write('lokalni cesta: ' + jmeno_souboru + '\n')
 
-        # zjistena url je vlozena do soupisu obrazku 
-        soupis = open('temp/soupis_obrazku.txt', "a")
-        soupis.write(spravna_url + '\n')
-        soupis.close()
+    # zjistena url je vlozena do soupisu obrazku 
+    soupis = open('temp/soupis_obrazku.txt', "a")
+    soupis.write(spravna_url + '\n')
+    soupis.close()
 
-        '''
-        if not os.path.isfile(jmeno_souboru):
+    '''  
+    # STAHOVANI OBRAZKU - zatim nedoreseno
+    if not os.path.isfile(jmeno_souboru):
 
             req = urllib2.Request(spravna_url)
             req.add_header('Referer', vstupni_url)
@@ -349,7 +358,7 @@ def stahni_obrazek(url_ke_stazeni,export_mode,debug):
             sys.stdout.write('konec sleepu 4s'
         else:
             sys.stdout.write('         soubor ' + jmeno_souboru + ' jiz existuje'
-        '''
+    '''
     #return jmeno_souboru # jen filename
     return spravna_url # i s adresou
 
@@ -945,15 +954,24 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
             cislo_radku += 1
             od_zacatku = cislo_radku - clanek_zacatek
 
+	    #if debug:
+	    #   sys.stdout.write(str(cislo_radku) + '\n')
+
             if '<meta property="og:url"' in line:
+		if debug:
+		   sys.stdout.write('meta property detekovano na radku: ' + str(cislo_radku) + '\n')
                 url_clanku = line.split('blog.cz/',1)[1]
                 url_clanku = url_clanku.split('/',1)[1]
                 url_clanku = url_clanku.split('" />',1)[0]
             # cislo radku, kde zacina clanek
             elif '<div class="article">' in line:
                 clanek_zacatek = cislo_radku
+		if debug:
+ 		   sys.stdout.write('zacatek sekce <div class="article"> detekovan na radku: ' + str(cislo_radku) + '\n')
             # titulek clanku    
             elif "<title>" in line:
+		if debug:
+		   sys.stdout.write("<title> detekováno na radku: " + str(cislo_radku) + '\n')
                 titulek_clanku = line.split('|',1)[0]
                 titulek_clanku = titulek_clanku.split('<title>',1)[1]
                 titulek_clanku = titulek_clanku.rstrip()
@@ -966,38 +984,57 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
             elif '/rubrika' in line and od_zacatku < 5 and od_zacatku > 0:
                 rubrika_url = line.split('<a href="/rubrika/',1)[1]
                 rubrika_url = rubrika_url.split('"',1)[0]
+		if debug:
+		   sys.stdout.write('url rubriky, ve ktere byl clanek publikovan: ' + rubrika_url + '\n')
             # slovni nazev rubriky
             elif 'title="Rubrika:' in line and od_zacatku < 7 and od_zacatku > 0:
                 rubrika = line.split('title="Rubrika: ',1)[1]
                 rubrika = rubrika.split('">',1)[0]
+		if debug:
+		   sys.stdout.write('nazev rubriky, ve ktere byl clanek publikovan: ' + rubrika + '\n')
             # autor clanku
             elif '|&nbsp;' in line and ':' in line and od_zacatku < 3 and od_zacatku > 0:
                 autor = line.split('|&nbsp;',1)[1]
                 autor = autor.rstrip()
+		if debug:
+		   sys.stdout.write('autor clanku: ' + autor + '\n') 
 	    # datum publikovani
                 datum_extrakt = line.split('|&nbsp;',1)[0]
                 datum_extrakt = datum_extrakt.rstrip()
                 datum_extrakt = datum_extrakt.strip()
             elif '|&nbsp;' in line and 'Před' in line and od_zacatku < 3 and od_zacatku > 0:
+		if debug:
+		   sys.stdout.write('datum varianta 1\n')
                 autor = line.split('|&nbsp;',1)[1]
                 autor = autor.rstrip()
 	    elif '</h2>' in line and od_zacatku < 2 and od_zacatku > 0 and datum_extrakt == "":
+		if debug:
+		   sys.stdout.write('datum varianta 2\n')
 		radek_datum = cislo_radku + 1
 	    elif cislo_radku is radek_datum and datum_extrakt == "":
+		if debug:
+		   sys.stdout.write('datum varianta 3\n')
 		datum_extrakt = line.rstrip()
 		datum_extrakt = datum_extrakt.strip()
 		sys.stdout.write(datum_extrakt)
             # ulozime si cislo radku, za kterym zacina samotny clanek + 1, kde zacina doopravdy
             elif '<div class="articleText">' in line:
                 radek_clanek = cislo_radku + 1
+		if debug:
+		   sys.stdout.write('cislo radku, kde je text clanku: ' + str(radek_clanek) + '\n')
             # tady uz samotny text..    
-            elif cislo_radku is radek_clanek:
+            elif cislo_radku == radek_clanek:
+		if debug:
+		   sys.stdout.write('prave je zpracovavan radek s textem clanku\n')
                 text_clanku = line.rsplit('</div>',1)[0]
                 text_clanku = text_clanku.strip()
                 text_clanku = text_clanku.rstrip()
-
+		if debug:
+		   sys.stdout.write('text_clanku: ' + text_clanku + '\n')
                # vykosteni a stazeni obrazku
                 if '<img' in line:
+		    if debug:
+		       sys.stdout.write('v clanku byly nalezeny obrazky\n')
                     xx = '<img'
                     yy = 0
                     konec = False
@@ -1006,7 +1043,8 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                         posledni = ''
                         for xx in line:
                             yy += 1
-
+			    if debug:
+			       sys.stdout.write(str(yy) +'.<img> \n')
                             try:
                                 obrazek = line.split('<img',1)[1]
                                 obrazek = obrazek.split('src="',1)[1]
@@ -1021,37 +1059,28 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                                         stahni_obrazek(obrazek,export_mode,debug)
                                         nova_url = novy_blog + '/' + tento_rok + '/' + tento_mesic.zfill(2) + '/' + jmeno_souboru
                                     if export_mode == 3:
-                                        nova_url = stahni_obrazek(obrazek,export_mode)
+                                        nova_url = stahni_obrazek(obrazek,export_mode,debug)
                                     if export_mode == 2:
                                         stahni_obrazek(obrazek,export_mode,debug)
                                         nova_url = 'wp-content/uploads/' + jmeno_souboru
                                     if export_mode == 1:
-                                        stahni_obrazek(obrazek,export_mode)
+                                        stahni_obrazek(obrazek,export_mode,debug)
                                         nova_url = novy_blog + '/' + jmeno_souboru
 
                                     if debug:
-                                        sys.stdout.write('stara url: ' + obrazek)
-                                        sys.stdout.write('nova url: ' + obrazek) ## TADY KVULI DEBUGU NECHAVAME STAROU ADRESU NA BLOG.CZ
+                                        sys.stdout.write('stara url: ' + obrazek + '\n')
+                                        sys.stdout.write('nova url: ' + nova_url + '\n')
 
                                     text_clanku = text_clanku.replace(obrazek, nova_url)
-                                    if debug:
-                                        sys.stdout.write('pred zavolanim stahni')
-                                        stahni_obrazek(obrazek,export_mode,debug)
-                                    if debug:
-                                        sys.stdout.write('stahni_obrazek(' + obrazek + ')    --  doopravdy nestahuje, neprovokujeme')
-                                    if debug:
-                                        sys.stdout.write('po zavolani stahni')
 
                                     line = line.split(obrazek,1)[1]
                                     posledni = obrazek
-                                    if debug:
-                                        sys.stdout.write('posledni: ' + posledni)
-                                        sys.stdout.write('konec deje za podminkou')
+
                                 else:
                                     if debug:
-                                        sys.stdout.write('obrazek jiz stazen a zpracovan')
+                                        sys.stdout.write('obrazek jiz stazen a zpracovan\n')
                             except:
-                                continue
+                               break 
 
     wpdatum = prevoddata(datum_extrakt,debug)
 
@@ -1062,8 +1091,8 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
 	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat datum publikování\n')
 	sys.exit(1)
     elif text_clanku == "":
-	sys.stdout.write('\n' + status_fail + 'Nepodařilo se extrahovat text článku "' + titulek_clanku + '"\n')
-	sys.exit(1)
+    	sys.stdout.write('\n' + status_fail + 'Nepodařilo se extrahovat text článku "' + titulek_clanku + '"\n')
+    	sys.exit(1)
 
     wpxml = open(vystupni_soubor, "a")
 
@@ -1259,11 +1288,10 @@ with open('temp/soupis_clanku.txt', 'rU') as m:
         clanek_soubor = clanek_soubor.rstrip('\r\n')
         clanek_soubor_test = 'temp/' + clanek_soubor
 	
-	if  not debug:
+	if not debug:
 	   progressbar(cislo_radku,pocet_dle_souboru)
 	
-        if os.path.isfile(clanek_soubor_test):
-	    continue
+        elif os.path.isfile(clanek_soubor_test):
 	    if debug:
                sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) + '] soubor již existuje, zapisuji do xml: ' + clanek_soubor + '\n')
         else:
