@@ -1289,7 +1289,8 @@ with open('temp/soupis_clanku.txt', 'rU') as m:
         clanek_soubor_test = 'temp/' + clanek_soubor
 	
 	if not debug:
-	   progressbar(cislo_radku,pocet_dle_souboru)
+	    stahni_html(zaznam,True)   
+	    progressbar(cislo_radku,pocet_dle_souboru)
 	
         elif os.path.isfile(clanek_soubor_test):
 	    if debug:
