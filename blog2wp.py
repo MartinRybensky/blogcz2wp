@@ -243,6 +243,21 @@ def prevoddata(fujdatum,debug):
 
     return wpdatum
 
+def minus_hodina(wpdatum):
+
+    gmtdatum = datetime.datetime.strptime(wpdatum, '%Y-%m-%d %H:%M:%S')
+    gmtdatum = gmtdatum - datetime.timedelta(hours = 1)
+    gmtdatum = datetime.datetime.strftime(gmtdatum, '%Y-%m-%d %H:%M:%S')
+
+    return gmtdatum
+
+def gmtdate2pubdate(gmtdatum):
+    # 		<pubDate>Tue, 15 Sep 2015 20:04:03 +0000</pubDate>
+    pubdatum = datetime.datetime.strptime(gmtdatum, '%Y-%m-%d %H:%M:%S')
+    pubdatum = datetime.datetime.strftime(pubdatum, '%a, %d %b %Y %H:%M:%S')
+    pubdatum = pubdatum + ' +0000'
+
+    return pubdatum
 
 ##############################
 # progressbar
@@ -908,7 +923,7 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
             wpxml.write('           <wp:comment_author_url>' + kom_web[z] + '</wp:comment_author_url>\n')
             wpxml.write('           <wp:comment_author_IP>127.0.0.1</wp:comment_author_IP>\n')
             wpxml.write('           <wp:comment_date>' + prevoddata(kom_datum[z],debug) + '</wp:comment_date>\n')
-            wpxml.write('           <wp:comment_date_gmt>0000-00-00 00:00:00</wp:comment_date_gmt>\n')
+            wpxml.write('           <wp:comment_date_gmt>' + minus_hodina(prevoddata(kom_datum[z],debug)) + '</wp:comment_date_gmt>\n')
             wpxml.write('           <wp:comment_content><![CDATA[' + kom_text[z] + ']]></wp:comment_content>\n')
             wpxml.write('           <wp:comment_approved>1</wp:comment_approved>\n')
             wpxml.write('           <wp:comment_type></wp:comment_type>\n')
@@ -922,7 +937,7 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
 # exportovat_clanek 
 ##############################
 
-def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,novy_blog):
+def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,novy_blog,img_dir):
     titulek_clanku = ''
     rubrika_url = ''
     rubrika = ''
@@ -1065,7 +1080,7 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                                         nova_url = 'wp-content/uploads/' + jmeno_souboru
                                     if export_mode == 1:
                                         stahni_obrazek(obrazek,export_mode,debug)
-                                        nova_url = novy_blog + '/' + jmeno_souboru
+                                        nova_url = img_dir + '/' +  jmeno_souboru
 
                                     if debug:
                                         sys.stdout.write('stara url: ' + obrazek + '\n')
@@ -1083,6 +1098,8 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                                break 
 
     wpdatum = prevoddata(datum_extrakt,debug)
+    gmtdatum = minus_hodina(wpdatum)
+    pubdatum = gmtdate2pubdate(gmtdatum)
 
     if autor == "":
 	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat jméno autora\n')
@@ -1098,17 +1115,19 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
 
     wpxml.write('   <item>\n')
     wpxml.write('       <title>' + titulek_clanku + '</title>\n')
-    wpxml.write('       <link>' + url_blog + '/' + rubrika_url + '/' + url_clanku + '/</link>\n')
-    wpxml.write('       <pubDate></pubDate>\n')
+    # -------------------------------------->
+    wpxml.write('       <link>' + novy_blog + '/' + url_clanku + '/</link>\n')
+    # <-------------------------------------
+    wpxml.write('       <pubDate>' + pubdatum + '</pubDate>\n')
     wpxml.write('       <dc:creator><![CDATA[' + autor + ']]></dc:creator>\n')
-    wpxml.write('       <guid isPermaLink="false">' + url_blog + '/?p=' + str(id_clanku) + '</guid>\n')
+    wpxml.write('       <guid isPermaLink="false">' + novy_blog + '/?p=' + str(id_clanku) + '</guid>\n')
     wpxml.write('       <description></description>\n')
     wpxml.write('       <content:encoded><![CDATA[' + text_clanku + ']]></content:encoded>\n')
     wpxml.write('       <excerpt:encoded><![CDATA[]]></excerpt:encoded>\n')
     wpxml.write('       <wp:post_id>' + str(id_clanku) + '</wp:post_id>\n')
     wpxml.write('       <category domain="category" nicename="' + rubrika_url + '"><![CDATA[' + rubrika + ']]></category>\n')
     wpxml.write('       <wp:post_date>' + wpdatum + '</wp:post_date>\n')
-    wpxml.write('       <wp:post_date_gmt>0000-00-00 00:00:00</wp:post_date_gmt>\n')
+    wpxml.write('       <wp:post_date_gmt>' + gmtdatum + '<wp:post_date_gmt>\n')
     wpxml.write('       <wp:comment_status>open</wp:comment_status>\n')
     wpxml.write('       <wp:ping_status>open</wp:ping_status>\n')
     wpxml.write('       <wp:post_name>' + url_clanku + '</wp:post_name>\n')
@@ -1173,7 +1192,7 @@ except:
 
 
 # inicializace promennych
-domena = 'blogcz.veruce.cz'
+domena = ''
 cislo_radku = 0
 clanek_soubor = ''
 clanek_soubor_p1 = ''
@@ -1185,6 +1204,7 @@ export_mode = 0
 export_mode_vstup = ''
 
 novy_blog = ''
+img_dir = ''
 
 sys.stdout.write('\n')
 sys.stdout.write('1 - vlastní wordpress nebo hosting obrázků: stáhnout obrázky, cesty změnit na absolutní\n')
@@ -1210,11 +1230,18 @@ while True:
 sys.stdout.write('\nVybrali jste: ' + str(export_mode) + '\n\n')
 
 if export_mode == 1:
-    sys.stdout.write('Zadejte kompletni adresu adresáře, ve kterém se budou nacházet obrázky.\nZadávejte ve tvaru s http/https, např. http://mojedomena.cz/obrazky/fotky nebo http://mujblog.cz/wp-content/upload\n')
+    sys.stdout.write('Zadejte doménu, na které bude běžet nový blog.\nZadávejte ve tvaru s http/https, např. http://mojedomena.cz nebo https://mujblog.cz\n')
     while True:
         novy_blog = raw_input("Adresa: ")
         if novy_blog != '':
             break
+    sys.stdout.write('Zadej kompletní URL adresáře s obrázky - např. http://mojedomena.cz/obrazky/fotky nebo http://mujblog.cz/wp-content/uploads\n')
+    
+    while True:
+        img_dir = raw_input("Adresa: ")
+	if img_dir != '':
+            break
+
 if export_mode == 4:
     sys.stdout.write('Zadejte adresu nového blogu na wordpress.com.\nZadávejte ve tvaru bez http/https, např. mujblog.wordpress.com\n')
     while True:
@@ -1302,7 +1329,7 @@ with open('temp/soupis_clanku.txt', 'rU') as m:
 
 
 
-        exportovat_clanek(clanek_soubor,vystupni_soubor,cislo_radku,debug,export_mode,novy_blog)
+        exportovat_clanek(clanek_soubor,vystupni_soubor,cislo_radku,debug,export_mode,novy_blog,img_dir)
 
 wpxml = open(vystupni_soubor, "a")
 wpxml.write(' <generator>https://wordpress.org/?v=4.8.1</generator>')
