@@ -4,10 +4,11 @@
 #  blog2wp.py
 #
 #
-# 2018-09-18
-#
 # Martin Rybensky
 #
+
+verze = '2019-02-02_01'
+
 
 import sys, os, urllib2, datetime, time, urlparse
 
@@ -19,7 +20,7 @@ tento_mesic = str(datetime.datetime.now().month)
 
 
 ##############################
-# prevoddata - funkce prevadejici posrane tvary datumu z blog.cz 
+# prevoddata - funkce prevadejici tvary datumu z blog.cz 
 # na standardni yyyy-mm-dd hh:mm:ss
 ##############################
 
@@ -436,6 +437,13 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
 
     nazev_blogu = ''
 
+    aktualni_timestamp = datetime.datetime.now()
+    export_pubdate = datetime.datetime.strftime(aktualni_timestamp, '%a, %d %b %Y %H:%M:%S')
+    export_created = datetime.datetime.strftime(aktualni_timestamp, '%Y-%m-%d %H:%M:%S')
+
+
+
+
     if os.path.isfile('temp/rubriky'):
         sys.stdout.write(status_warn + 'soubor temp/rubriky již existuje, pokračuji s daty z něho\n')
     else:
@@ -457,8 +465,11 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
                 nazev_blogu = nazev_blogu.split('</title>',1)[0]
                 nazev_blogu = nazev_blogu.rstrip()
                 nazev_blogu = nazev_blogu.strip()
-
+		
                 wpxml.write('<?xml version="1.0" encoding="UTF-8" ?>\n')
+		wpxml.write('<!-- generator="Blogcz2WP ver.' + verze + '" created="' + export_created  + '" -->\n')
+                wpxml.write('<!-- Blogcz2WP: blog.cz to Wordpress export tool, made by Martin Rybensky 2017-2019  -->\n')
+                wpxml.write('<!-- Project homepage: https://github.com/MartinRybensky/blogcz2wp  -->\n')
                 wpxml.write(' <rss version="2.0"\n')
                 wpxml.write('    xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/"\n')
                 wpxml.write('    xmlns:content="http://purl.org/rss/1.0/modules/content/"\n')
@@ -470,7 +481,7 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
                 wpxml.write('   <title>' + nazev_blogu + '</title>\n')
                 wpxml.write('   <link>' + url_blog + '</link>\n')
                 wpxml.write('   <description>' + nazev_blogu + '</description>\n')
-                wpxml.write('   <pubDate>Thu, 03 Aug 2017 20:18:27 +0000</pubDate>\n')
+                wpxml.write('   <pubDate>' + export_pubdate + '</pubDate>\n')
                 wpxml.write('   <language>cs-CZ</language>\n')
                 wpxml.write('   <wp:wxr_version>1.2</wp:wxr_version>\n')
                 wpxml.write('   <wp:base_site_url>' + url_blog + '</wp:base_site_url>\n')
@@ -1151,6 +1162,14 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
 
     zapsano_radku = num_lines = sum(1 for line in open(vystupni_soubor))
 
+    # csv
+    wpcsv = open('temp/odkazy.csv', "a")
+    wpcsv.write('sep=;')
+    wpcsv.write(novy_blog + '/' + url_clanku + ';' + url_clanku + '/\n')
+    wpcsv.close()
+
+
+
     return zapsano_radku
 
 
@@ -1192,7 +1211,6 @@ except:
 
 
 # inicializace promennych
-domena = ''
 cislo_radku = 0
 clanek_soubor = ''
 clanek_soubor_p1 = ''
@@ -1315,17 +1333,17 @@ with open('temp/soupis_clanku.txt', 'rU') as m:
         clanek_soubor = clanek_soubor.rstrip('\r\n')
         clanek_soubor_test = 'temp/' + clanek_soubor
 	
-	if not debug:
-	    stahni_html(zaznam,True)   
-	    progressbar(cislo_radku,pocet_dle_souboru)
-	
-        elif os.path.isfile(clanek_soubor_test):
+        if os.path.isfile(clanek_soubor_test):
 	    if debug:
                sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) + '] soubor již existuje, zapisuji do xml: ' + clanek_soubor + '\n')
+	    else:
+               progressbar(cislo_radku,pocet_dle_souboru)
         else:
             stahni_html(zaznam,True)
 	    if debug:
                sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) +  '] soubor stažen, zapisuji do xml: ' + clanek_soubor + '\n')
+            else:
+		progressbar(cislo_radku,pocet_dle_souboru)
 
 
 
