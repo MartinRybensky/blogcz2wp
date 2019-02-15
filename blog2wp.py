@@ -7,7 +7,7 @@
 # Martin Rybensky
 #
 
-verze = '2019-02-02_01'
+verze = '2019-02-15_01'
 
 
 import sys, os, urllib2, datetime, time, urlparse
@@ -302,7 +302,7 @@ def ocistit_url(web_url):
 # stahni_obrazek
 ##############################
 
-def stahni_obrazek(url_ke_stazeni,export_mode,debug):
+def stahni_obrazek(url_ke_stazeni,export_mode,debug,prepis_obrazku):
 
     vstupni_url = url_ke_stazeni
 
@@ -312,6 +312,7 @@ def stahni_obrazek(url_ke_stazeni,export_mode,debug):
     jmeno_souboru = ''
     jmeno_souboru_p1 = ''
     jmeno_souboru_p2 = ''
+    blog_cz_hosting = False
 
     url_blog = url_ke_stazeni.split('.cz/',1)[0]
     url_blog = url_blog + '.cz/'
@@ -323,6 +324,7 @@ def stahni_obrazek(url_ke_stazeni,export_mode,debug):
     if 'bcache' in vstupni_url or 'imageproxy' in vstupni_url:
 	if debug:
             sys.stdout.write('obrazek je hostovan na blogu.cz\n')
+	blog_cz_hosting = True
 	if '%7E' in vstupni_url:
            url_obrazku = vstupni_url.split('cz%7E',1)[1]
            server = vstupni_url.split('%7E',1)[1]
@@ -349,10 +351,15 @@ def stahni_obrazek(url_ke_stazeni,export_mode,debug):
             sys.stdout.write('lokalni cesta: ' + jmeno_souboru + '\n')
 
     # zjistena url je vlozena do soupisu obrazku 
-    soupis = open('temp/soupis_obrazku.txt', "a")
-    soupis.write(spravna_url + '\n')
-    soupis.close()
-
+    if prepis_obrazku == 2 and blog_cz_hosting:
+        soupis = open('temp/soupis_obrazku.txt', "a")
+        soupis.write(spravna_url + '\n')
+        soupis.close()
+    elif prepis_obrazku == 1:
+        soupis = open('temp/soupis_obrazku.txt', "a")
+        soupis.write(spravna_url + '\n')
+        soupis.close()
+ 
     '''  
     # STAHOVANI OBRAZKU - zatim nedoreseno
     if not os.path.isfile(jmeno_souboru):
@@ -516,10 +523,6 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
                     sys.stdout.write(' ' + str(cislo_rubriky) + ': ' + rubrika_nazev[cislo_rubriky] + '\n')
 
 
-    # soubor rubriky je jiz vytezen, smazat
-    # os.remove('temp/rubriky')
-
-
     rubriky_txt.close()
     wpxml.close()
 
@@ -590,8 +593,6 @@ def exportovat_archiv(url_blog,debug):
 	    if '<div id="menuInner">' in line:
 	    	break
 
-    # soubor rubriky je jiz vytezen, smazat
-    # os.remove('temp/archiv')
     pocet_celkem = sum(archiv_pocet.values())
     sys.stdout.write(' [info] celkový počet článků v archivu (dle deklarovaných počtů v závorkách): ' +  str(pocet_celkem) + '\n')
     
@@ -785,7 +786,8 @@ def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
        for lajn in e:
 
             if strankovane_komentare and not od_jednicky and 'discussPrevious' in lajn:
-                sys.stdout.write('strankovane komentare u clanku vyse')
+		if debug:
+                    sys.stdout.write('strankovane komentare u clanku vyse')
                 url_komentaru = lajn.split('discussPrevious" href="',1)[1]
                 url_komentaru = url_komentaru.split('" title="Zobrazit',1)[0]
 
@@ -795,8 +797,8 @@ def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
 
                 soubor_komentare = url_komentaru.rsplit('/',1)[1]
                 url_noindex = url_komentaru.rsplit('/',1)[0]
-
-                sys.stdout.write('stranek komentaru: ' + soubor_komentare + ' + zbytek\n')
+		if debug:
+                    sys.stdout.write('stranek komentaru: ' + soubor_komentare + ' + zbytek\n')
                 soubor_komentare = int(soubor_komentare)
                 soubor_komentare_range = soubor_komentare + 1
                 for w in range(1, soubor_komentare_range):
@@ -809,7 +811,8 @@ def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
                         index_pole = w - 1
                         index_pole = str(index_pole) + '00'
                         index_pole = int(index_pole)
-                    sys.stdout.write('zpracovavam soubor:' + komentarovy_soubor + ', pocatecni index: ' + str(index_pole) + '\n')
+                    if debug:
+		        sys.stdout.write('zpracovavam soubor:' + komentarovy_soubor + ', pocatecni index: ' + str(index_pole) + '\n')
                     zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug)
 
                     # aby se uz neprovadely radky nize
@@ -818,7 +821,8 @@ def zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug):
                 index_pole = str(index_pole)
                 index_pole = str(soubor_komentare) + '00'
                 index_pole = int(index_pole)
-                sys.stdout.write('zpracovavam zbytek z clanku, pocatecni index: ' + str(index_pole) + '\n')
+		if debug:
+                    sys.stdout.write('zpracovavam zbytek z clanku, pocatecni index: ' + str(index_pole) + '\n')
                 zapis_komentare(vstupni_soubor,vystupni_soubor,index_pole,debug)
 
 
@@ -858,6 +862,8 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
                 pocet_komentaru = line.split('<a class="commentNr" id="ref',1)[1]
                 pocet_komentaru = pocet_komentaru.split('" name=',1)[0]
                 pocet_komentaru = int(pocet_komentaru)
+		if debug:
+		    sys.stdout.write('pocet komentaru: ' + str(pocet_komentaru) + '\n')
                 kom_jmeno[pocet_komentaru] = line.split('<strong>',1)[1]
                 kom_jmeno[pocet_komentaru] = kom_jmeno[pocet_komentaru].split('</strong>',1)[0]
 
@@ -900,8 +906,6 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
                 kom_text[pocet_komentaru] = kom_text[pocet_komentaru].strip()
                 kom_text[pocet_komentaru] = kom_text[pocet_komentaru].rstrip()
 
-    #if debug:
-    #    sys.stdout.write(kom_jmeno)
     for y, elem in enumerate(kom_jmeno):
 
         z = y + index_pole
@@ -922,7 +926,19 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
             test_text = kom_text[z]
         except:
             kom_text[z] = ''
+	#-------debug, pod vyřešení odstranit -->
+	if debug:
+	    sys.stdout.write('proměnná z: ' + str(z) + '\n')
 
+	if komentarovy_soubor == 'temp/1510-transformace-rijen-2015' and z == 204:
+	   sys.stdout.write('JE TO ON!!\n')
+	   break
+		
+	if komentarovy_soubor == 'temp/1409-aktualni-energie-bovis-xi' and z == 208:
+	   sys.stdout.write('JE TO ON!!\n')
+	   break
+ 
+	#-----------
         if z > index_pole:
             if debug:
                 sys.stdout.write('komentar: ' + str(z) + '. ' + kom_jmeno[z] + ' | ')
@@ -948,7 +964,7 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
 # exportovat_clanek 
 ##############################
 
-def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,novy_blog,img_dir):
+def exportovat_clanek(url_blog,vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,novy_blog,img_dir,prepis_odkazu,prepis_obrazku):
     titulek_clanku = ''
     rubrika_url = ''
     rubrika = ''
@@ -1082,39 +1098,91 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
                                     jmeno_souboru = obrazek.rsplit('/',1)[1]
 
                                     if export_mode == 4:
-                                        stahni_obrazek(obrazek,export_mode,debug)
+                                        stahni_obrazek(obrazek,export_mode,debug,prepis_obrazku)
                                         nova_url = novy_blog + '/' + tento_rok + '/' + tento_mesic.zfill(2) + '/' + jmeno_souboru
                                     if export_mode == 3:
                                         nova_url = stahni_obrazek(obrazek,export_mode,debug)
                                     if export_mode == 2:
-                                        stahni_obrazek(obrazek,export_mode,debug)
+                                        stahni_obrazek(obrazek,export_mode,debug,prepis_obrazku)
                                         nova_url = 'wp-content/uploads/' + jmeno_souboru
                                     if export_mode == 1:
-                                        stahni_obrazek(obrazek,export_mode,debug)
+                                        stahni_obrazek(obrazek,export_mode,debug,prepis_obrazku)
                                         nova_url = img_dir + '/' +  jmeno_souboru
 
                                     if debug:
                                         sys.stdout.write('stara url: ' + obrazek + '\n')
                                         sys.stdout.write('nova url: ' + nova_url + '\n')
-
-                                    text_clanku = text_clanku.replace(obrazek, nova_url)
+				    
+                                    # rewrite pouze adres obrázků hostovaných na blog.cz
+                                    if 'jxs.cz' in obrazek and prepis_obrazku == 2:
+                                        text_clanku = text_clanku.replace(obrazek, nova_url)
+				    elif prepis_obrazku == 1: # přepsat cesty všech obrázků
+					text_clanku = text_clanku.replace(obrazek, nova_url)
+				    
 
                                     line = line.split(obrazek,1)[1]
                                     posledni = obrazek
 
+
                                 else:
                                     if debug:
-                                        sys.stdout.write('obrazek jiz stazen a zpracovan\n')
+                                        sys.stdout.write('obrázek již stažen a zpracován\n')
                             except:
                                break 
+
+		#------- rewrite odkazů na interní články (na stejném blogu, jako je ten exportovaný) -----------------
+		odkaz = ''
+		odkaz_novy = ''
+
+                if url_blog in text_clanku:
+                    if debug:
+                       sys.stdout.write('v článku byl nalezen odkaz na interní článek\n')
+		    tt = '<a href="'
+                    pp = 0
+                    konec_odkazu = False
+
+		    ke_zpracovani = text_clanku
+
+                    if not konec_odkazu:
+                        posledni_odkaz = '' 
+                        for tt in ke_zpracovani:
+                            pp += 1 
+                            try:
+				odkaz = ke_zpracovani.split('<a',1)[1]
+                                odkaz = odkaz.split('href="',1)[1]
+                                odkaz = odkaz.split('"',1)[0]
+				if posledni_odkaz == odkaz:
+				   if debug:
+				      sys.stdout.write('tento odkaz byl poslední, konec cyklu \n')
+				   break
+				if debug:
+				   sys.stdout.write(str(pp) + ': ' + odkaz + '\n')
+				
+				# přepisovat odkazy jen ty, co původně vedly na stejný blog jako právě exportovaný
+				# a zároveň pouze pokud je aktivní režim přepisu odkazů
+				if url_blog in odkaz and prepis_odkazu == 2:
+                                    odkaz_novy = odkaz.rsplit('/',1)[1]
+				    text_clanku = text_clanku.replace(odkaz, odkaz_novy)
+				    if debug:
+			                sys.stdout.write('odkaz novy: ' + odkaz_novy + '\n')
+
+				posledni_odkaz = odkaz
+				
+				# odzriznout jiz zpracovanou cast
+				ke_zpracovani = ke_zpracovani.split(odkaz,1)[1]
+			    except:
+				break
+		else:
+		    if debug:
+			sys.stdout.write('nebyl nalezen žádný interní odkaz k přepsání\n')
 
     wpdatum = prevoddata(datum_extrakt,debug)
     gmtdatum = minus_hodina(wpdatum)
     pubdatum = gmtdate2pubdate(gmtdatum)
 
     if autor == "":
-	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat jméno autora\n')
-	sys.exit(1)
+    	sys.stdout.write('\n' + status_warn + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat jméno autora\n')
+    #	sys.exit(1) # neukončovat! - na blogu.cz lze publikovat článek bez vyplněného jména autora - není chyba
     elif wpdatum == "":
 	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat datum publikování\n')
 	sys.exit(1)
@@ -1126,9 +1194,7 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
 
     wpxml.write('   <item>\n')
     wpxml.write('       <title>' + titulek_clanku + '</title>\n')
-    # -------------------------------------->
     wpxml.write('       <link>' + novy_blog + '/' + url_clanku + '/</link>\n')
-    # <-------------------------------------
     wpxml.write('       <pubDate>' + pubdatum + '</pubDate>\n')
     wpxml.write('       <dc:creator><![CDATA[' + autor + ']]></dc:creator>\n')
     wpxml.write('       <guid isPermaLink="false">' + novy_blog + '/?p=' + str(id_clanku) + '</guid>\n')
@@ -1164,7 +1230,6 @@ def exportovat_clanek(vstupni_soubor,vystupni_soubor,idclanku,debug,export_mode,
 
     # csv
     wpcsv = open('temp/odkazy.csv', "a")
-    wpcsv.write('sep=;')
     wpcsv.write(novy_blog + '/' + url_clanku + ';' + url_clanku + '/\n')
     wpcsv.close()
 
@@ -1220,6 +1285,8 @@ pocet_dle_souboru = 0
 
 export_mode = 0
 export_mode_vstup = ''
+prepis_odkazu = 0
+prepis_obrazku = 0
 
 novy_blog = ''
 img_dir = ''
@@ -1231,7 +1298,7 @@ sys.stdout.write('3 - blogspot.com: obrázky nestahovat, ponechat absolutní ces
 sys.stdout.write('4 - wordpress.com: stáhnout obrázky, cesty změnit na nové umistaní na wp.com\n')
 
 while True:
-    export_mode_vstup = raw_input("Zvolte rezim exportu (1-4): ")
+    export_mode_vstup = raw_input("Zvolte režim exportu (1-4): ")
     if export_mode_vstup == '1':
         export_mode = 1
         break
@@ -1247,19 +1314,21 @@ while True:
 
 sys.stdout.write('\nVybrali jste: ' + str(export_mode) + '\n\n')
 
+# --- input adresy nového blogu na vlastním Wordpressu + input url k adresáři s obrázky
 if export_mode == 1:
     sys.stdout.write('Zadejte doménu, na které bude běžet nový blog.\nZadávejte ve tvaru s http/https, např. http://mojedomena.cz nebo https://mujblog.cz\n')
     while True:
         novy_blog = raw_input("Adresa: ")
         if novy_blog != '':
             break
-    sys.stdout.write('Zadej kompletní URL adresáře s obrázky - např. http://mojedomena.cz/obrazky/fotky nebo http://mujblog.cz/wp-content/uploads\n')
+    sys.stdout.write('Zadej URL adresáře s obrázky, cesta může být absolutní i relativní - např. http://mojedomena.cz/obrazky/fotky, img/obrazky nebo wp-content/uploads/stare\n')
     
     while True:
         img_dir = raw_input("Adresa: ")
 	if img_dir != '':
             break
 
+# --- input adresy cílového blogu na wordpress.com
 if export_mode == 4:
     sys.stdout.write('Zadejte adresu nového blogu na wordpress.com.\nZadávejte ve tvaru bez http/https, např. mujblog.wordpress.com\n')
     while True:
@@ -1269,16 +1338,43 @@ if export_mode == 4:
             break
 
 
-
+# --- výběr režimu nakládání s interními odkazy
 if export_mode != 3:
-    sys.stdout.write('        Adresa nového blogu: ' + novy_blog + '\n')
+
+    sys.stdout.write('Režim nakládání s interními odkazy směrujícími na články na exportovaném blogu:\n')
+    sys.stdout.write('1 - ponechat v původní podobě, např. <a href="' + url_blog + '/1902/nejaky-pekny-clanek">\n') 
+    sys.stdout.write('2 - přepsat na novou doménu s konvencí Permalink: post name, např. <a href=' + novy_blog + '/nejaky-pekny-clanek">\n')
+    while True:
+        prepis_odkazu_input = raw_input("Zvolte režim (1-2):\n")
+	if prepis_odkazu_input == "1":
+            prepis_odkazu = 1
+	    break
+ 	elif prepis_odkazu_input == "2":
+	    prepis_odkazu = 2
+            break
+
+# --- výběr režimu nakládání s adresami obrázků
+if export_mode != 3:
+
+    sys.stdout.write('Režim nakládání s adresami obrázků linkovaných v článcích:\n')
+    sys.stdout.write('1 - přepsat všechny cesty na nové umístění, stáhnout všechny obrázky\n') 
+    sys.stdout.write('2 - přepsat pouze cesty obrázků hostovaných na blog.cz a stáhnout pouze ty\n')
+    while True:
+        prepis_obrazku_input = raw_input("Zvolte režim (1-2):\n")
+	if prepis_obrazku_input == "1":
+            prepis_obrazku = 1
+	    break
+ 	elif prepis_obrazku_input == "2":
+	    prepis_obrazku = 2
+            break
+         
 
 
 
 vystupni_soubor = url_blog.split('http://',1)[1]
 vystupni_soubor = vystupni_soubor + '.xml'
 
-# zalozime pracovni adresar
+# zalozime pracovni adresar temp
 if not os.path.exists('temp'):
         os.makedirs('temp')
 
@@ -1292,6 +1388,9 @@ if export_mode != 3:
 
 
 sys.stdout.write('        URL exportovaného blogu: ' + url_blog + '\n')
+sys.stdout.write('        URL nového blogu: ' + novy_blog + '\n')
+sys.stdout.write('        URL adresáře s obrázky: ' + img_dir + '\n\n')
+
 sys.stdout.write('        Pracovní adresář: ' + 'temp\n')
 sys.stdout.write('        Jméno XML souboru s exportem: ' + vystupni_soubor + '\n\n')
 
@@ -1311,9 +1410,10 @@ soupis_clanku(url_blog,debug)
 pocet_dle_souboru = num_lines = sum(1 for line in open('temp/soupis_clanku.txt'))
 
 # pokud program nebezi v debug modu, pri nesouhlasu poctu nalezenych clanku oproti archivu se ukonci
-if pocet_dle_souboru != pocet_dle_blogu and not debug:
+if pocet_dle_souboru != pocet_dle_blogu:
     sys.stdout.write(status_fail + 'Počet článků nesouhlasí! V archivu deklarováno / nalezeno: ' + str(pocet_dle_blogu) + ' / ' + str(pocet_dle_souboru) + '\n')
-    sys.exit(1)
+    if not debug:
+        sys.exit(1)
 else:
     sys.stdout.write('\n' + status_ok + 'Počet nalezených článků se shoduje s deklarovanými počty v archivu\n')
     sys.stdout.write(status_ok + 'Celkový počet článků ke stažení: ' + str(pocet_dle_souboru) + '\n')
@@ -1347,7 +1447,7 @@ with open('temp/soupis_clanku.txt', 'rU') as m:
 
 
 
-        exportovat_clanek(clanek_soubor,vystupni_soubor,cislo_radku,debug,export_mode,novy_blog,img_dir)
+        exportovat_clanek(url_blog,clanek_soubor,vystupni_soubor,cislo_radku,debug,export_mode,novy_blog,img_dir,prepis_odkazu,prepis_obrazku)
 
 wpxml = open(vystupni_soubor, "a")
 wpxml.write(' <generator>https://wordpress.org/?v=4.8.1</generator>')
@@ -1357,5 +1457,5 @@ wpxml.close()
 
 
 
-sys.stdout.write('\n' + status_ok + 'Hotovo! Vysledek ulozen do ' + vystupni_soubor + '\n')
+sys.stdout.write('\n' + status_ok + 'Hotovo! Výsledek uložen do ' + vystupni_soubor + '\n')
 sys.exit(0)
