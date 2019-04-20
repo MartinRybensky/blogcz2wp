@@ -26,6 +26,5 @@ http://blog.veruce.cz/migrace-z-blog-cz-na-wordpress/
 ## Upozornění 
 __Autor programu nenese odpovědnost za neautorizované použití ve smyslu exportu cizího blogu bez souhlasu jeho autora. 
 Uživatel se zavazuje stahovat pouze autorský obsah, jehož je vlastníkem nebo od vlastníka obdržel explicitní souhlas.
-
 Program Blogcz2WP je poskytován zdarma bez jakýchkoliv záruk a nároku na cokoliv.__
 
