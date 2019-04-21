@@ -20,7 +20,7 @@ http://blog.veruce.cz/migrace-z-blog-cz-na-wordpress/
 
 ## Použití:
 ```
-./blogcz2wp.py jmeno-vaseho-blogu.blog.cz
+./blog2wp.py jmeno-vaseho-blogu.blog.cz
 ```
 
 ## Upozornění 
