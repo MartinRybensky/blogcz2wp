@@ -842,6 +842,7 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
     pocet_komentaru = 0
 
     cislo_radku_komentare = 0
+    nasledujici_radek_komentare = 0
     kom_jmeno = {}
     kom_web = {}
     kom_datum =  {}
@@ -901,10 +902,33 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
                     kom_datum[pocet_komentaru] = kom_datum[pocet_komentaru].split(' | <a',1)[0]
             # text komentare
             elif '<div class="commentText"><p>' in line and cislo_radku_komentare == radek_s_komentarem:
+                if debug:
+                    sys.stdout.write('cislo_radku_komentare: ' + str(cislo_radku_komentare) + ' ; radek_s_komentarem: ' + str(radek_s_komentarem) + '\n')
                 kom_text[pocet_komentaru] = line.split('<p>',1)[1]
                 kom_text[pocet_komentaru] = kom_text[pocet_komentaru].split('</p></div></div>',1)[0]
                 kom_text[pocet_komentaru] = kom_text[pocet_komentaru].strip()
                 kom_text[pocet_komentaru] = kom_text[pocet_komentaru].rstrip()
+
+		if '</p></div></div>' not in line:
+                   nasledujici_radek_komentare = radek_s_komentarem + 1
+		else:
+                   nasledujici_radek_komentare = 0
+
+	    elif cislo_radku_komentare == nasledujici_radek_komentare and 'commentHeader' not in line:
+                if debug:
+                    sys.stdout.write('Detekován víceřádkový komentář. nasledujici_radek_komentare: ' + str(nasledujici_radek_komentare) + '\n')
+                zbytek_komentare = line.strip()
+                zbytek_komentare = zbytek_komentare.rstrip()
+                kom_text[pocet_komentaru] += zbytek_komentare
+                kom_text[pocet_komentaru] = kom_text[pocet_komentaru].split('</p></div></div>',1)[0]
+                kom_text[pocet_komentaru] = kom_text[pocet_komentaru].strip()
+                kom_text[pocet_komentaru] = kom_text[pocet_komentaru].rstrip()
+
+		if '</p></div></div>' not in line:
+                   nasledujici_radek_komentare = nasledujici_radek_komentare + 1
+		else:
+                   nasledujici_radek_komentare = 0
+                
 
     for y, elem in enumerate(kom_jmeno):
 
