@@ -7,7 +7,7 @@
 # Martin Rybensky
 #
 
-verze = '2019-02-15_01'
+verze = '2020-02-11_01'
 
 
 import sys, os, urllib2, datetime, time, urlparse
@@ -1125,7 +1125,8 @@ def exportovat_clanek(url_blog,vstupni_soubor,vystupni_soubor,idclanku,debug,exp
                                         stahni_obrazek(obrazek,export_mode,debug,prepis_obrazku)
                                         nova_url = novy_blog + '/' + tento_rok + '/' + tento_mesic.zfill(2) + '/' + jmeno_souboru
                                     if export_mode == 3:
-                                        nova_url = stahni_obrazek(obrazek,export_mode,debug)
+                                        prepis_obrazku = 1
+                                        nova_url = stahni_obrazek(obrazek,export_mode,debug,prepis_obrazku)
                                     if export_mode == 2:
                                         stahni_obrazek(obrazek,export_mode,debug,prepis_obrazku)
                                         nova_url = 'wp-content/uploads/' + jmeno_souboru
@@ -1402,10 +1403,9 @@ vystupni_soubor = vystupni_soubor + '.xml'
 if not os.path.exists('temp'):
         os.makedirs('temp')
 
-if export_mode != 3:
-    # zalozime obrazkovy adresar
-    if not os.path.exists('obrazky'):
-        os.makedirs('obrazky')
+# zalozime obrazkovy adresar
+if not os.path.exists('obrazky'):
+    os.makedirs('obrazky')
     # zalozime soupis
     soupis_obrazku = open('temp/soupis_obrazku.txt', "w+")
     soupis_obrazku.close()
@@ -1479,7 +1479,7 @@ wpxml.write('</channel>\n')
 wpxml.write('</rss>\n')
 wpxml.close()
 
-
+os.rename("temp/soupis_obrazku.txt", "obrazky/soupis_obrazku.txt")
 
 sys.stdout.write('\n' + status_ok + 'Hotovo! Výsledek uložen do ' + vystupni_soubor + '\n')
 sys.exit(0)
