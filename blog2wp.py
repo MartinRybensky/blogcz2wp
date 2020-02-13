@@ -446,6 +446,7 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
 
     aktualni_timestamp = datetime.datetime.now()
     export_pubdate = datetime.datetime.strftime(aktualni_timestamp, '%a, %d %b %Y %H:%M:%S')
+    export_pubdate = export_pubdate + ' +0000'
     export_created = datetime.datetime.strftime(aktualni_timestamp, '%Y-%m-%d %H:%M:%S')
 
 
@@ -1229,7 +1230,7 @@ def exportovat_clanek(url_blog,vstupni_soubor,vystupni_soubor,idclanku,debug,exp
     wpxml.write('       <wp:post_id>' + str(id_clanku) + '</wp:post_id>\n')
     wpxml.write('       <category domain="category" nicename="' + rubrika_url + '"><![CDATA[' + rubrika + ']]></category>\n')
     wpxml.write('       <wp:post_date>' + wpdatum + '</wp:post_date>\n')
-    wpxml.write('       <wp:post_date_gmt>' + gmtdatum + '<wp:post_date_gmt>\n')
+    wpxml.write('       <wp:post_date_gmt>' + gmtdatum + '</wp:post_date_gmt>\n')
     wpxml.write('       <wp:comment_status>open</wp:comment_status>\n')
     wpxml.write('       <wp:ping_status>open</wp:ping_status>\n')
     wpxml.write('       <wp:post_name>' + url_clanku + '</wp:post_name>\n')
@@ -1248,7 +1249,7 @@ def exportovat_clanek(url_blog,vstupni_soubor,vystupni_soubor,idclanku,debug,exp
     zpracovat_komentare(vstupni_soubor,vystupni_soubor,debug)
 
     wpxml = open(vystupni_soubor, "a")
-    wpxml.write('   </item>\n')
+    wpxml.write('   </item>\n\n\n')
     wpxml.close()
 
     zapsano_radku = num_lines = sum(1 for line in open(vystupni_soubor))
