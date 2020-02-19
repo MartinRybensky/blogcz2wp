@@ -1363,6 +1363,8 @@ if export_mode == 4:
             novy_blog = 'https://' + novy_blog
             break
 
+if export_mode == 3:
+	novy_blog = url_blog
 
 # --- výběr režimu nakládání s interními odkazy
 if export_mode != 3:
