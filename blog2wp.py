@@ -7,7 +7,7 @@
 # Martin Rybensky
 #
 
-verze = '2020-02-11_01'
+verze = '2020-02-27_01'
 
 
 import sys, os, urllib2, datetime, time, urlparse
@@ -1124,7 +1124,10 @@ def exportovat_clanek(url_blog,vstupni_soubor,vystupni_soubor,idclanku,debug,exp
 
                                     if export_mode == 4:
                                         stahni_obrazek(obrazek,export_mode,debug,prepis_obrazku)
-                                        nova_url = novy_blog + '/' + tento_rok + '/' + tento_mesic.zfill(2) + '/' + jmeno_souboru
+					novy_blog_img = novy_blog.split('.',1)[0]
+					novy_blog_img = novy_blog_img + '.files.wordpress.com'
+					
+                                        nova_url = novy_blog_img + '/' + tento_rok + '/' + tento_mesic.zfill(2) + '/' + jmeno_souboru
                                     if export_mode == 3:
                                         prepis_obrazku = 1
                                         nova_url = stahni_obrazek(obrazek,export_mode,debug,prepis_obrazku)
@@ -1207,11 +1210,14 @@ def exportovat_clanek(url_blog,vstupni_soubor,vystupni_soubor,idclanku,debug,exp
     pubdatum = gmtdate2pubdate(gmtdatum)
 
     if autor == "":
-    	sys.stdout.write('\n' + status_warn + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat jméno autora\n')
-    #	sys.exit(1) # neukončovat! - na blogu.cz lze publikovat článek bez vyplněného jména autora - není chyba
+        if debug:
+    	    sys.stdout.write('\n' + status_warn + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat jméno autora\n')
+        autor = "neznámý autor"
+
     elif wpdatum == "":
 	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat datum publikování\n')
 	sys.exit(1)
+
     elif text_clanku == "":
     	sys.stdout.write('\n' + status_fail + 'Nepodařilo se extrahovat text článku "' + titulek_clanku + '"\n')
     	sys.exit(1)
