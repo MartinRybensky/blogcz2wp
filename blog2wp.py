@@ -466,6 +466,13 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
     with open('temp/rubriky', 'r') as k:
         for line in k:
             cislo_radku += 1
+            
+            # autor blogu
+            if "<meta name=\"author\"" in line:
+              autor_blogu = line.split('content=',1)[1]
+              autor_blogu = autor_blogu.split('"',2)[1]
+              autor_blogu = autor_blogu.replace('"','')
+
 
             # nazev blogu
             if "<title>" in line:
@@ -494,6 +501,15 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
                 wpxml.write('   <wp:wxr_version>1.2</wp:wxr_version>\n')
                 wpxml.write('   <wp:base_site_url>' + url_blog + '</wp:base_site_url>\n')
                 wpxml.write('   <wp:base_blog_url>' + url_blog + '</wp:base_blog_url>\n')
+                wpxml.write('\n')
+                wpxml.write('   <wp:author>\n')
+                wpxml.write('     <wp:author_id>1</wp:author_id>\n')
+                wpxml.write('     <wp:author_login><![CDATA[' + autor_blogu + ']]></wp:author_login>\n')
+                wpxml.write('     <wp:author_email><![CDATA[]]></wp:author_email>\n')
+                wpxml.write('     <wp:author_display_name><![CDATA[' + autor_blogu + ']]></wp:author_display_name>\n')
+                wpxml.write('     <wp:author_first_name><![CDATA[]]></wp:author_first_name>\n')
+                wpxml.write('     <wp:author_last_name><![CDATA[]]></wp:author_last_name>\n')
+                wpxml.write('   </wp:author>\n')
                 wpxml.write('\n')
 
 
