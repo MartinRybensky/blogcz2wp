@@ -11,6 +11,7 @@ verze = '2020-02-27_01'
 
 
 import sys, os, urllib2, datetime, time, urlparse
+from functools import wraps
 
 tento_rok = str(datetime.datetime.now().year)
 tento_mesic = str(datetime.datetime.now().month)
@@ -286,6 +287,54 @@ def progressbar(done,total):
         sys.stdout.write("\r [" + str(done) + "/" + str(total) +"] |" + bar + "| " + str(donepct) + "%")
 	sys.stdout.flush()
 
+####################x
+# RETRY
+
+def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
+    """Retry calling the decorated function using an exponential backoff.
+
+    http://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
+    original from: http://wiki.python.org/moin/PythonDecoratorLibrary#Retry
+
+    :param ExceptionToCheck: the exception to check. may be a tuple of
+        exceptions to check
+    :type ExceptionToCheck: Exception or tuple
+    :param tries: number of times to try (not retry) before giving up
+    :type tries: int
+    :param delay: initial delay between retries in seconds
+    :type delay: int
+    :param backoff: backoff multiplier e.g. value of 2 will double the delay
+        each retry
+    :type backoff: int
+    :param logger: logger to use. If None, print
+    :type logger: logging.Logger instance
+    """
+    def deco_retry(f):
+
+        @wraps(f)
+        def f_retry(*args, **kwargs):
+            mtries, mdelay = tries, delay
+            while mtries > 1:
+                try:
+                    return f(*args, **kwargs)
+                except ExceptionToCheck, e:
+                    msg = "%s, Retrying in %d seconds..." % (str(e), mdelay)
+                    if logger:
+                        logger.warning(msg)
+                    else:
+                        print msg
+                    time.sleep(mdelay)
+                    mtries -= 1
+                    mdelay *= backoff
+            return f(*args, **kwargs)
+
+        return f_retry  # true decorator
+
+    return deco_retry
+
+
+
+
 ##############################
 # ocistit_url - zbavi url v komentari nezadouciho nofollow
 ##############################
@@ -390,6 +439,8 @@ def stahni_obrazek(url_ke_stazeni,export_mode,debug,prepis_obrazku):
 # stahni_html - stahne ze zadane url html soubor
 ##############################
 
+
+@retry(urllib2.URLError, tries=4, delay=3, backoff=2)
 def stahni_html(url_ke_stazeni,clanek):
 
     jmeno_souboru = ''
@@ -398,24 +449,12 @@ def stahni_html(url_ke_stazeni,clanek):
     url_blog = url_ke_stazeni.split('.cz/',1)[0]
     url_blog = url_blog + '.cz/'
 
-    retrycount = 0
-    response = None
     
-    while response is None:
-        try:
-            req = urllib2.Request(url_ke_stazeni)
-            req.add_header('Referer', url_blog)
-            req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:10.0) Gecko/20100101 Firefox/10.0')
-            response = urllib2.urlopen(req)
-            do_souboru = response.read()
-        except:
-            print(str(response))
-            if canRetry(response.code):
-                retrycount+=1
-                if retrycount > 10:
-                    raise
-            else:
-                raise
+    req = urllib2.Request(url_ke_stazeni)
+    req.add_header('Referer', url_blog)
+    req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:10.0) Gecko/20100101 Firefox/10.0')
+    response = urllib2.urlopen(req)
+    do_souboru = response.read()
 
     if clanek:
         jmeno_souboru_p1 = url_ke_stazeni.rsplit('/',2)[1]
