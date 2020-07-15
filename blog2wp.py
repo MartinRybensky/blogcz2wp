@@ -398,11 +398,24 @@ def stahni_html(url_ke_stazeni,clanek):
     url_blog = url_ke_stazeni.split('.cz/',1)[0]
     url_blog = url_blog + '.cz/'
 
-    req = urllib2.Request(url_ke_stazeni)
-    req.add_header('Referer', url_blog)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:10.0) Gecko/20100101 Firefox/10.0')
-    response = urllib2.urlopen(req)
-    do_souboru = response.read()
+    retrycount = 0
+    response = None
+    
+    while response is None:
+        try:
+            req = urllib2.Request(url_ke_stazeni)
+            req.add_header('Referer', url_blog)
+            req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:10.0) Gecko/20100101 Firefox/10.0')
+            response = urllib2.urlopen(req)
+            do_souboru = response.read()
+        except:
+            print(str(response))
+            if canRetry(response.code):
+                retrycount+=1
+                if retrycount > 10:
+                    raise
+            else:
+                raise
 
     if clanek:
         jmeno_souboru_p1 = url_ke_stazeni.rsplit('/',2)[1]
@@ -1094,7 +1107,7 @@ def exportovat_clanek(url_blog,vstupni_soubor,vystupni_soubor,idclanku,debug,exp
 		if debug:
 		   sys.stdout.write('datum varianta 2\n')
 		radek_datum = cislo_radku + 1
-	    elif cislo_radku is radek_datum and datum_extrakt == "":
+	    elif cislo_radku == radek_datum and datum_extrakt == "":
 		if debug:
 		   sys.stdout.write('datum varianta 3\n')
 		datum_extrakt = line.rstrip()
