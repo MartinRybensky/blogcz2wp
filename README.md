@@ -6,7 +6,7 @@ Výstupem je soubor XML ve formátu WXR (Wordpress Extended RSS) určený pro Wo
 Blogcz2WP umí:
 * stáhnout obsah blogu na doméně blog.cz, tzn. články, autory, kategorie a komentáře
 * zachovat u článků a komentářů jejich metadata (čas zveřejnění, autor, e-mail, www autora, atd.)
-* stáhnout obrázky v článcích, v exportovaných článcích modifikovat cesty k obrázkům tak, aby se načítaly z nového umístění
+* vyhledat obrázky v článcích a pořídit jejich soupis, v exportovaných článcích modifikovat cesty k obrázkům tak, aby se načítaly z nového umístění
 * přepsat interní odkazy v článcích na jiné články na stejném blogu na novou doménu podle konvence PermaLink: Post Name
 
 Není vyžadováno žádné heslo ani jiné přístupové údaje, skript pracuje s volně dostupnými stránkami, nepřistupuje k žádným chráněným zdrojům, nehackuje blog.cz ani jeho databázi.
@@ -18,9 +18,23 @@ Export se nijak nedotkne stávajícího blogu, ten zůstává beze změny. Pro s
 Více o projektu naleznete zde:
 http://blog.veruce.cz/migrace-z-blog-cz-na-wordpress/
 
-## Použití:
+## Závislosti:
+Python 2.x
+
+## Použití (Linux):
 ```
 ./blog2wp.py jmeno-vaseho-blogu.blog.cz
+```
+
+## Použití (Windows):
+Vyžaduje mít nainstalován Python 2.7 pro Windows: https://www.python.org/ftp/python/2.7.18/python-2.7.18.msi
+```
+C:\python27\python.exe blog2wp.py jmeno-vaseho-blogu.blog.cz
+```
+## Obrázky
+Soupis obrázků je pořízen do souboru obrazky/soupis_obrazku.txt, obrázky nejsou skriptem stahovány za jeho běhu. K jejich následnému stažení použijte svůj oblíbený download manager, třeba wget:
+```
+wget -i soupis_obrazku.txt -nc
 ```
 
 ## Upozornění 
