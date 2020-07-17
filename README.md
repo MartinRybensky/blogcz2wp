@@ -36,6 +36,9 @@ Soupis obrázků je pořízen do souboru obrazky/soupis_obrazku.txt, obrázky ne
 ```
 wget -i soupis_obrazku.txt -nc
 ```
+# Blogspot.com / Blogger.com
+Výsledné XML vygenerované programem je určeno pro Wordpress, před importem do blogu na blogspot.com je nutné provést konverzi pomocí této webové aplikace:
+https://wordpress-to-blogger-converter.appspot.com/
 
 ## Upozornění 
 __Autor programu nenese odpovědnost za neautorizované použití ve smyslu exportu cizího blogu bez souhlasu jeho autora. 
