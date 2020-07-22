@@ -7,7 +7,7 @@
 # Martin Rybensky
 #
 
-verze = '2020-02-27_01'
+verze = '2020-07-23_01'
 
 
 import sys, os, urllib2, datetime, time, urlparse
@@ -224,7 +224,8 @@ def prevoddata(fujdatum,debug):
         minut = fujdatum.split('Před ',1)[1]
         minut = minut.split(' minutami',1)[0]
         minut = int(minut)
-        sys.stdout.write('minut: ' + str(minut))
+        if debug:
+            sys.stdout.write('minut: ' + str(minut))
         pred = dneska - datetime.timedelta(minutes = minut)
         den = str(pred.day)
         den = den.zfill(2)
@@ -336,7 +337,7 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
 
 
 ##############################
-# ocistit_url - zbavi url v komentari nezadouciho nofollow
+# ocistit_url - zbavi url v komentari nezadouciho nofollow + antispam
 ##############################
 
 def ocistit_url(web_url):
@@ -345,6 +346,10 @@ def ocistit_url(web_url):
     else:
         ocistena_url = web_url
 
+    if '&' in web_url:
+        ocistena_url = ""
+
+    
     return ocistena_url
 
 ##############################
@@ -477,7 +482,7 @@ def stahni_html(url_ke_stazeni,clanek):
 # exportovat_rubriky  
 ##############################
 
-def exportovat_rubriky(url_blog,vystupni_soubor,debug):
+def exportovat_rubriky(url_blog,vystupni_soubor,xml_filename_count,debug):
 
     status_fail = ' [\033[91mFAIL\033[0m] '
     status_ok = ' [\033[92m OK \033[0m] '
@@ -503,12 +508,12 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
 
 
 
-
-    if os.path.isfile('temp/rubriky'):
-        sys.stdout.write(status_warn + 'soubor temp/rubriky již existuje, pokračuji s daty z něho\n')
-    else:
-        stahni_html(url_rubriky,False)
-        sys.stdout.write(status_ok + 'soubor s definicemi rubrik úspešně stažen\n')
+    if xml_filename_count == 1:
+        if os.path.isfile('temp/rubriky'):
+            sys.stdout.write(status_warn + 'soubor temp/rubriky již existuje, pokračuji s daty z něho\n')
+        else:
+            stahni_html(url_rubriky,False)
+            sys.stdout.write(status_ok + 'soubor s definicemi rubrik úspešně stažen\n')
 
     # a ted to zapiseme do xmlka
     wpxml = open(vystupni_soubor, "w+")
@@ -535,7 +540,7 @@ def exportovat_rubriky(url_blog,vystupni_soubor,debug):
 		
                 wpxml.write('<?xml version="1.0" encoding="UTF-8" ?>\n')
 		wpxml.write('<!-- generator="Blogcz2WP ver.' + verze + '" created="' + export_created  + '" -->\n')
-                wpxml.write('<!-- Blogcz2WP: blog.cz to Wordpress export tool, made by Martin Rybensky 2017-2019  -->\n')
+                wpxml.write('<!-- Blogcz2WP: blog.cz to Wordpress export tool, made by Martin Rybensky 2017-2020  -->\n')
                 wpxml.write('<!-- Project homepage: https://github.com/MartinRybensky/blogcz2wp  -->\n')
                 wpxml.write(' <rss version="2.0"\n')
                 wpxml.write('    xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/"\n')
@@ -737,7 +742,6 @@ def soupis_clanku(url_blog,debug):
                             odkaz = odkaz.strip()
                             odkaz = odkaz.rstrip()
 			    odkaz_cislo = odkaz_cislo + 1
-			    #if debug:
                             sys.stdout.write('\r [' + str(odkaz_cislo).zfill(4) + '] ' + url_blog + odkaz + '                                               ')
 			    sys.stdout.flush()
                             seznam_txt.write(url_blog + odkaz + '\n')
@@ -750,7 +754,6 @@ def soupis_clanku(url_blog,debug):
                             odkaz = odkaz.split('"',1)[0]
                             odkaz = odkaz.strip()
                             odkaz = odkaz.rstrip()
- 			    #if debug:
 			    odkaz_cislo = odkaz_cislo + 1
                             sys.stdout.write('\r [' + str(odkaz_cislo).zfill(4) + '] ' + url_blog + odkaz + '                                               ')
 			    sys.stdout.flush()
@@ -1019,19 +1022,7 @@ def zapis_komentare(komentarovy_soubor,vystupni_soubor,index_pole,debug):
             test_text = kom_text[z]
         except:
             kom_text[z] = ''
-	#-------debug, pod vyřešení odstranit -->
-	if debug:
-	    sys.stdout.write('proměnná z: ' + str(z) + '\n')
 
-	if komentarovy_soubor == 'temp/1510-transformace-rijen-2015' and z == 204:
-	   sys.stdout.write('JE TO ON!!\n')
-	   break
-		
-	if komentarovy_soubor == 'temp/1409-aktualni-energie-bovis-xi' and z == 208:
-	   sys.stdout.write('JE TO ON!!\n')
-	   break
- 
-	#-----------
         if z > index_pole:
             if debug:
                 sys.stdout.write('komentar: ' + str(z) + '. ' + kom_jmeno[z] + ' | ')
@@ -1337,6 +1328,14 @@ def exportovat_clanek(url_blog,vstupni_soubor,vystupni_soubor,idclanku,debug,exp
 
     return zapsano_radku
 
+def wpxml_write_footer(vystupni_soubor): 
+
+    wpxml = open(vystupni_soubor, "a")
+    wpxml.write(' <generator>https://wordpress.org/?v=4.8.1</generator>\n')
+    wpxml.write('</channel>\n')
+    wpxml.write('</rss>\n')
+    wpxml.close()
+
 
 ##########################################################################################
 #
@@ -1390,6 +1389,8 @@ prepis_obrazku = 0
 
 novy_blog = ''
 img_dir = ''
+
+xml_filename_count = 1
 
 sys.stdout.write('\n')
 sys.stdout.write('1 - vlastní wordpress nebo hosting obrázků: stáhnout obrázky, cesty změnit na absolutní\n')
@@ -1474,6 +1475,7 @@ if export_mode != 3:
 
 
 vystupni_soubor = url_blog.split('http://',1)[1]
+xml_filename_noext = vystupni_soubor
 vystupni_soubor = vystupni_soubor + '.xml'
 
 # zalozime pracovni adresar temp
@@ -1497,13 +1499,10 @@ sys.stdout.write('        Jméno XML souboru s exportem: ' + vystupni_soubor + '
 
 
 
-#sys.stdout.write('        Nalezené rubriky k exportu:\n')
-exportovat_rubriky(url_blog,vystupni_soubor,debug)
+exportovat_rubriky(url_blog,vystupni_soubor,xml_filename_count,debug)
 
-#sys.stdout.write('        Nalezene články v archivu:\n')
 pocet_dle_blogu = exportovat_archiv(url_blog,debug)
 
-#sys.stdout.write('        Nalezené články:\n')
 soupis_clanku(url_blog,debug)
 
 
@@ -1522,6 +1521,7 @@ else:
 
 
 # zapsat do XMLka clanky
+
 with open('temp/soupis_clanku.txt', 'rU') as m:
     for zaznam in m:
         cislo_radku += 1
@@ -1533,30 +1533,65 @@ with open('temp/soupis_clanku.txt', 'rU') as m:
         clanek_soubor = clanek_soubor.strip()
         clanek_soubor = clanek_soubor.rstrip('\r\n')
         clanek_soubor_test = 'temp/' + clanek_soubor
-	
-        if os.path.isfile(clanek_soubor_test):
-	    if debug:
-               sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) + '] soubor již existuje, zapisuji do xml: ' + clanek_soubor + '\n')
-	    else:
-               progressbar(cislo_radku,pocet_dle_souboru)
-        else:
-            stahni_html(zaznam,True)
-	    if debug:
-               sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) +  '] soubor stažen, zapisuji do xml: ' + clanek_soubor + '\n')
+
+	xml_filesize = os.stat(vystupni_soubor)
+	if xml_filesize.st_size <= 5242880:
+
+            if os.path.isfile(clanek_soubor_test):
+    	        if debug:
+                    sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) + '] soubor již existuje, zapisuji do xml: ' + clanek_soubor + '\n')
+	        else:
+                    progressbar(cislo_radku,pocet_dle_souboru)
             else:
-		progressbar(cislo_radku,pocet_dle_souboru)
+                stahni_html(zaznam,True)
+	        if debug:
+                    sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) +  '] soubor stažen, zapisuji do xml: ' + clanek_soubor + '\n')
+                else:
+		    progressbar(cislo_radku,pocet_dle_souboru)
+
+            exportovat_clanek(url_blog,clanek_soubor,vystupni_soubor,cislo_radku,debug,export_mode,novy_blog,img_dir,prepis_odkazu,prepis_obrazku)
+	else:
+	    # výstupní soubor přesáhl 5 MB, ukončíme jej zapsáním XML patičky            
+	    wpxml_write_footer(vystupni_soubor)	
+	    
+	    # výstupních souborů bude více, takže první soubor nazevblogu.blog.cz.xml
+            # přejmenujeme na nazevblogu.blog.cz_01.xml
+	    if xml_filename_count == 1:
+	        os.rename(vystupni_soubor, xml_filename_noext + '_01.xml')
+                vystupni_soubor = xml_filename_noext + '_01.xml'
+
+	
+	    sys.stdout.write('\n'+ status_warn + 'Výstupní soubor ' + vystupni_soubor + ' překročil velikost 5 MB, pokračuji do nového\n')
+
+	    xml_filename_count += 1
+
+	    vystupni_soubor = xml_filename_noext + '_' + str(xml_filename_count).zfill(2) + '.xml'
+	    
+            # do nově definovaného následující výstupního souboru zapíšeme hlavičku
+	    exportovat_rubriky(url_blog,vystupni_soubor,xml_filename_count,debug)
+
+            if os.path.isfile(clanek_soubor_test):
+    	        if debug:
+                    sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) + '] soubor již existuje, zapisuji do xml: ' + clanek_soubor + '\n')
+	        else:
+                    progressbar(cislo_radku,pocet_dle_souboru)
+            else:
+                stahni_html(zaznam,True)
+	        if debug:
+                    sys.stdout.write("\n\n [" + str(cislo_radku) + '/' + str(pocet_dle_souboru) +  '] soubor stažen, zapisuji do xml: ' + clanek_soubor + '\n')
+                else:
+		    progressbar(cislo_radku,pocet_dle_souboru)
 
 
+            exportovat_clanek(url_blog,clanek_soubor,vystupni_soubor,cislo_radku,debug,export_mode,novy_blog,img_dir,prepis_odkazu,prepis_obrazku)
 
-        exportovat_clanek(url_blog,clanek_soubor,vystupni_soubor,cislo_radku,debug,export_mode,novy_blog,img_dir,prepis_odkazu,prepis_obrazku)
 
-wpxml = open(vystupni_soubor, "a")
-wpxml.write(' <generator>https://wordpress.org/?v=4.8.1</generator>')
-wpxml.write('</channel>\n')
-wpxml.write('</rss>\n')
-wpxml.close()
+wpxml_write_footer(vystupni_soubor)
 
 os.rename("temp/soupis_obrazku.txt", "obrazky/soupis_obrazku.txt")
 
-sys.stdout.write('\n' + status_ok + 'Hotovo! Výsledek uložen do ' + vystupni_soubor + '\n')
+if xml_filename_count == 1:
+    sys.stdout.write('\n' + status_ok + 'Hotovo! Výsledek uložen do ' + vystupni_soubor + '\n')
+else:
+    sys.stdout.write('\n' + status_ok + 'Hotovo! Výsledek uložen do celkem ' + str(xml_filename_count) + ' XML souborů\n')
 sys.exit(0)
