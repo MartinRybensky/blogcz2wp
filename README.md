@@ -8,6 +8,7 @@ Blogcz2WP umí:
 * zachovat u článků a komentářů jejich metadata (čas zveřejnění, autor, e-mail, www autora, atd.)
 * vyhledat obrázky v článcích a pořídit jejich soupis, v exportovaných článcích modifikovat cesty k obrázkům tak, aby se načítaly z nového umístění
 * přepsat interní odkazy v článcích na jiné články na stejném blogu na novou doménu podle konvence PermaLink: Post Name
+* rozdělit výstupní data do více XML souborů po 5 MB (kvůli limitům upload_max_filesize/post_max_size a blogspot konvertoru) 
 
 Není vyžadováno žádné heslo ani jiné přístupové údaje, skript pracuje s volně dostupnými stránkami, nepřistupuje k žádným chráněným zdrojům, nehackuje blog.cz ani jeho databázi.
 Export se nijak nedotkne stávajícího blogu, ten zůstává beze změny. Pro správnou funkci je pouze nutné mít rozhraní blogu nastaveno na český jazyk.
