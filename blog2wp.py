@@ -1274,12 +1274,10 @@ def exportovat_clanek(url_blog,vstupni_soubor,vystupni_soubor,idclanku,debug,exp
         autor = "neznámý autor"
 
     elif wpdatum == "":
-	sys.stdout.write('\n' + status_fail + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat datum publikování\n')
-	sys.exit(1)
+	sys.stdout.write('\n' + status_warn + 'U článku "' + titulek_clanku + '" se nepodařilo extrahovat datum publikování\n')
 
     elif text_clanku == "":
-    	sys.stdout.write('\n' + status_fail + 'Nepodařilo se extrahovat text článku "' + titulek_clanku + '"\n')
-    	sys.exit(1)
+    	sys.stdout.write('\n' + status_warn + 'Nepodařilo se extrahovat text článku "' + titulek_clanku + '"\n')
 
     wpxml = open(vystupni_soubor, "a")
 
@@ -1346,15 +1344,24 @@ def wpxml_write_footer(vystupni_soubor):
 status_fail = ' [\033[91mFAIL\033[0m] '
 status_ok = ' [\033[92m OK \033[0m] '
 status_warn= ' [\033[93mWARN\033[0m] '
+napoveda = """
+Použití: ./blog2wp.py nazev_blogu.blog.cz  --parametr --parametr
+  Přepínače:
+    --debug      spustí skript v diagnostickém režimu s verbose výstupem do konzole
+    --nosplit    výstup bude uložen do jediného XML souboru bez ohledu na velikost
+    --help       zobrazí tuto nápovědu
+
+ Blogcz2WP ver.""" + verze + """
+ https://github.com/MartinRybensky/blogcz2wp
+ Martin Rybenský 2017-2020\n\n"""
 
 try:
     url_blog = sys.argv[1]
 except:
-    sys.stdout.write(status_fail + 'Jako parametr je třeba zadat adresu převáděného blogu\n')
-    sys.exit(1)
+    sys.exit(0)
 
 if 'blog.cz' not in url_blog:
-    sys.stdout.write(status_fail + 'Adresa převáděného blogu musí být ve tvaru nazevblogu.blog.cz\n')
+    sys.stdout.write(napoveda)
     sys.exit(1)
 
 # pokud byla url blogu zadana bez "http://", doplnime
@@ -1367,10 +1374,26 @@ url_blog = url_blog + '.cz'
 
 # zapnout/vypnout debug mode parametrem
 try:
-    if sys.argv[2] == 'debug':
+    if (sys.argv[2] == '--debug' or sys.argv[3] == '--debug'):
         debug = True
 except:
     debug = False
+
+# vypnout dělení výstupních XML souborů
+try:
+    if (sys.argv[2] == '--nosplit' or sys.argv[3] == '--nosplit'):
+        nosplit = True
+except:
+    nosplit = False
+
+# zobrazit nápovědu a ukončit
+try:
+    if (sys.argv[2] == '--help' or sys.argv[3] == '--help'):
+        sys.stdout.write(napoveda)
+	sys.exit(0)
+except:
+    pass     
+
 
 
 
@@ -1391,6 +1414,12 @@ novy_blog = ''
 img_dir = ''
 
 xml_filename_count = 1
+
+
+if nosplit:
+    xml_max_filesize = 100000000000
+if not nosplit:
+    xml_max_filesize = 5242880 # 5 MB
 
 sys.stdout.write('\n')
 sys.stdout.write('1 - vlastní wordpress nebo hosting obrázků: stáhnout obrázky, cesty změnit na absolutní\n')
@@ -1535,7 +1564,7 @@ with open('temp/soupis_clanku.txt', 'rU') as m:
         clanek_soubor_test = 'temp/' + clanek_soubor
 
 	xml_filesize = os.stat(vystupni_soubor)
-	if xml_filesize.st_size <= 5242880:
+	if xml_filesize.st_size <= xml_max_filesize:
 
             if os.path.isfile(clanek_soubor_test):
     	        if debug:
