@@ -7,7 +7,7 @@
 # Martin Rybensky
 #
 
-verze = '2020-07-23_01'
+verze = '2020-07-28_01'
 
 
 import sys, os, urllib2, datetime, time, urlparse
@@ -1344,8 +1344,8 @@ def wpxml_write_footer(vystupni_soubor):
 status_fail = ' [\033[91mFAIL\033[0m] '
 status_ok = ' [\033[92m OK \033[0m] '
 status_warn= ' [\033[93mWARN\033[0m] '
-napoveda = """
-Použití: ./blog2wp.py nazev_blogu.blog.cz  --parametr --parametr
+napoveda = """ Použití: ./blog2wp.py nazev_blogu.blog.cz  --parametr --parametr
+
   Přepínače:
     --debug      spustí skript v diagnostickém režimu s verbose výstupem do konzole
     --nosplit    výstup bude uložen do jediného XML souboru bez ohledu na velikost
@@ -1358,6 +1358,7 @@ Použití: ./blog2wp.py nazev_blogu.blog.cz  --parametr --parametr
 try:
     url_blog = sys.argv[1]
 except:
+    sys.stdout.write(napoveda)
     sys.exit(0)
 
 if 'blog.cz' not in url_blog:
