@@ -1623,4 +1623,7 @@ if xml_filename_count == 1:
     sys.stdout.write('\n' + status_ok + 'Hotovo! Výsledek uložen do ' + vystupni_soubor + '\n')
 else:
     sys.stdout.write('\n' + status_ok + 'Hotovo! Výsledek uložen do celkem ' + str(xml_filename_count) + ' XML souborů\n')
+if export_mode == 3:
+    sys.stdout.write(' XML je třeba před importem do Blogspotu zkonvertovat pomocí této webové aplikace:\n')
+    sys.stdout.write(' https://wordpress-to-blogger-converter.appspot.com/\n\n')
 sys.exit(0)
