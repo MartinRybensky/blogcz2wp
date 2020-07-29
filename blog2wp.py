@@ -393,6 +393,9 @@ def stahni_obrazek(url_ke_stazeni,export_mode,debug,prepis_obrazku):
         spravna_url = 'http://' + server + url_obrazku
 	if debug:
             sys.stdout.write('spravna url po zruseni ochrany: ' + spravna_url + '\n')
+    elif '.jxs.cz/' in vstupni_url:
+        blog_cz_hosting = True
+        spravna_url = vstupni_url
     else:
         # pokud vyrazy testovane vyse detekovany nejsou,
         spravna_url = vstupni_url           # je zjistena url rovnou povazovana za pouzitelnou
