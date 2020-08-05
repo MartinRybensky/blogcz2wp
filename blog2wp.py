@@ -13,7 +13,7 @@ import requests
 import os
 import sys
 from functools import wraps
-verze = '2020-07-28_01'
+verze = '2020-08-05_01'
 
 
 try:
@@ -277,7 +277,8 @@ def gmtdate2pubdate(gmtdatum):
 
 
 def opakuj_znak(znak, pocet):
-    return (znak * ((pocet / len(znak)) + 1))[:pocet]
+    znaky = pocet * znak
+    return znaky
 
 
 def progressbar(done, total):
