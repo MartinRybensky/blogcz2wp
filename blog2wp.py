@@ -13,7 +13,8 @@ import requests
 import os
 import sys
 from functools import wraps
-verze = '2020-08-05_01'
+verze = '2020-08-05_02'
+
 
 
 try:
@@ -497,7 +498,7 @@ def stahni_html(url_ke_stazeni, clanek):
 
     jmeno_souboru = 'temp/' + jmeno_souboru
 
-    soubor_zapis = open(jmeno_souboru, "w+")
+    soubor_zapis = open(jmeno_souboru, "wb+")
 
     soubor_zapis.write(do_souboru.encode('utf8'))
     soubor_zapis.close()
