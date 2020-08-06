@@ -20,7 +20,8 @@ Více o projektu naleznete zde:
 http://blog.veruce.cz/migrace-z-blog-cz-na-wordpress/
 
 ## Závislosti:
-Python 2.x
+Python 2.7 nebo Python 3.X
+requests  (pip install requests)
 
 ## Použití (Linux):
 ```
