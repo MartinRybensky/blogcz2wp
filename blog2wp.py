@@ -13,7 +13,7 @@ import requests
 import os
 import sys
 from functools import wraps
-verze = '2020-08-05_02'
+verze = '2020-08-10_01'
 
 
 
@@ -474,7 +474,8 @@ def stahni_obrazek(url_ke_stazeni, export_mode, debug, prepis_obrazku):
 ##############################
 
 
-@retry(requests.exceptions.RequestException, tries=4, delay=3, backoff=2)
+@retry(requests.exceptions.RequestException, tries=10, delay=3, backoff=2)
+@retry(requests.ConnectionError, tries=10, delay=3, backoff=2)
 def stahni_html(url_ke_stazeni, clanek):
 
     jmeno_souboru = ''
@@ -486,7 +487,24 @@ def stahni_html(url_ke_stazeni, clanek):
     headers = {
         'referer': url_blog,
         'user-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:10.0) Gecko/20100101 Firefox/10.0'}
-    req = requests.get(url_ke_stazeni, headers=headers)
+
+     
+
+    r = requests.get(url_ke_stazeni, headers=headers)
+    try:
+        r.raise_for_status()
+    except requests.exceptions.HTTPError:
+        raise
+ 
+    else:
+        try:
+            req = requests.get(url_ke_stazeni, headers=headers)
+
+        except ConnectionError as err:
+            raise
+        except requests.exceptions.RequestException as err:
+            raise
+
     do_souboru = req.text
 
     if clanek:
@@ -1184,6 +1202,10 @@ def zapis_komentare(komentarovy_soubor, vystupni_soubor, index_pole, debug):
             test_text = kom_text[z]
         except BaseException:
             kom_text[z] = ''
+        try:
+            test_jmeno = kom_jmeno[z]
+        except:
+            break
 
         if z > index_pole:
             if debug:
