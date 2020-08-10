@@ -32,7 +32,7 @@ requests  (pip install requests)
 ## Použití (Windows):
 Vyžaduje mít nainstalován Python 2.7 pro Windows: https://www.python.org/ftp/python/2.7.18/python-2.7.18.msi
 ```
-C:\python27\python.exe -b pip install requests
+C:\python27\python.exe -m pip install requests
 
 C:\python27\python.exe blog2wp.py jmeno-vaseho-blogu.blog.cz
 ```
