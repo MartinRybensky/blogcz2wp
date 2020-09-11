@@ -1,4 +1,12 @@
 # blogcz2wp
+```diff
+- Provoz serveru blog.cz byl ukončen, blogy na něm hostované již nejsou dostupné. Skriptem blogcz2wp již nelze žádný blog stáhnout a zazálohovat, program jako takový již tedy pozbyl smysl své existence. 
+```
+Od vzniku první verze programu v srpnu 2017 bylo až do srpna 2020 během těchto tří let jen mnou zazálohováno na žádost jejich autorů přes 150 blogů. Mnoho dalších pak bez mé pomoci uživateli samostatně, jejich počet mi však není znám. Tak jako tak, s odstupem hodnotím celý projekt jako úspěšný a mám radost z každého blogu, který byl pomocí skriptu blogcz2wp zachráněn.
+
+Děkuji všem, kteří mi jej hlášením chyb a poskytnutím námětů na rozšíření či vylepšení pomohli rozvíjet. Speciální dík patří uživateli @korbeljak, který kód převedl do formátu kompatibilního s Python3.
+
+## původní README (již neaktuální)
 
 Blogcz2WP je nástroj umožňující export obsahu blogu běžícího na doméně blog.cz a následný import do redakčního systému Wordpress.
 Výstupem je soubor XML ve formátu WXR (Wordpress Extended RSS) určený pro Wordpress Importer.
@@ -12,8 +20,6 @@ Blogcz2WP umí:
 
 Není vyžadováno žádné heslo ani jiné přístupové údaje, skript pracuje s volně dostupnými stránkami, nepřistupuje k žádným chráněným zdrojům, nehackuje blog.cz ani jeho databázi.
 Export se nijak nedotkne stávajícího blogu, ten zůstává beze změny. Pro správnou funkci je pouze nutné mít rozhraní blogu nastaveno na český jazyk.
-
-
 
 
 Více o projektu naleznete zde:
