@@ -2,7 +2,7 @@
 ```diff
 - Provoz serveru blog.cz byl ukončen, blogy na něm hostované již nejsou dostupné.
 
-Skriptem blogcz2wp již nelze žádný blog stáhnout a zazálohovat, program jako takový již tedy pozbyl smysl své existence. 
+- Skriptem blogcz2wp již nelze žádný blog stáhnout a zazálohovat, program jako takový již tedy pozbyl smysl své existence. 
 ```
 Od vzniku první verze programu v srpnu 2017 bylo až do srpna 2020 během těchto tří let jen mnou zazálohováno na žádost jejich autorů přes 150 blogů. Mnoho dalších pak bez mé pomoci uživateli samostatně, jejich počet mi však není znám. Tak jako tak, s odstupem hodnotím celý projekt jako úspěšný a mám radost z každého blogu, který byl pomocí skriptu blogcz2wp zachráněn.
 
